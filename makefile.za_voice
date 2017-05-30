@@ -1,0 +1,49 @@
+TARGET = za_voice
+ATTR = prx
+
+OBJS = za_voice_entry.o za_voice.o hook.o hook_asm.o \
+		player.o io.o event.o mutex.o pspthreadman_mutex.o
+
+DIR_BIN = bin
+DIR_SRC = src
+DIR_TMP = bin/tmp
+
+ifeq ($(DIR_TMP),)
+EXTRA_CLEAN += sf_ogg.o sf_wav.o sf_at3.o
+else
+EXTRA_CLEAN += $(DIR_TMP)/sf_ogg.o $(DIR_TMP)/sf_wav.o $(DIR_TMP)/sf_at3.o
+endif
+
+CFLAGS = -O2 -G0 -Wall -std=c99
+CXXFLAGS = -O2 -G0 -Wall -std=c++0x -fno-exceptions -fno-rtti
+LDFLAGS =
+
+INCDIR = ./extlibs/include $(PSPDEV)/psp/include 
+LIBDIR = ./extlibs/lib
+
+LIBS =  -lvorbisidec -logg
+LIBS += -lc -lpsprtc -lpspatrac3 -lpspaudio -lpspuser
+#USE_PSPSDK_LIBC = 1
+
+ifneq ($(DEBUG),)
+CFLAGS += -DDEBUG=1
+CXXFLAGS += -DDEBUG=1
+endif
+
+ifneq ($(AT3),0)
+OBJS += sf_at3.o
+endif
+
+ifneq ($(WAV),0)
+OBJS += sf_wav.o
+endif
+
+ifneq ($(OGG),0)
+OBJS += sf_ogg.o
+endif
+
+PSP_FW_VERSION=660
+PRX_EXPORTS=exports_za_voice.exp
+
+PSPSDK = $(shell psp-config --pspsdk-path)
+include ./build_prx.mak

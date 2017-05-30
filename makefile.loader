@@ -1,0 +1,26 @@
+TARGET = EBOOT
+ATTR = BIN
+
+OBJS = loader.o
+
+DIR_BIN = bin
+DIR_SRC = src
+DIR_TMP = bin/tmp
+
+CFLAGS = -O2 -G0 -Wall -std=c99
+CXXFLAGS = -O2 -G0 -Wall -fno-exceptions -fno-rtti -std=c++0x
+LDFLAGS =
+
+#USE_KERNEL_LIBS = 1
+#LIBS = -lpspctrl -lpspkernel
+
+ifneq ($(DEBUG),)
+CFLAGS += -DDEBUG=1
+CXXFLAGS += -DDEBUG=1
+endif
+
+PSP_FW_VERSION=660
+PRX_EXPORTS=exports_loader.exp
+
+PSPSDK = $(shell psp-config --pspsdk-path)
+include ./build_prx.mak

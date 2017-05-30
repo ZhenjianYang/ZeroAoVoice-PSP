@@ -81,3 +81,16 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# eclipse setting
+.settings
+.cproject
+.project
+
+# out
+bin/
+
+# extlibs
+!extlibs/lib/*.a
+
+

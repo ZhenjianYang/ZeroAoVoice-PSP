@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
-	constexpr size_t LbaAlign = 2048;
+	constexpr uint32_t LbaAlign = 2048;
 	constexpr size_t MaxIsoHeadSize = 1024 * LbaAlign;
 	constexpr size_t Off_IsoSize = 0x8050;
 
@@ -71,12 +71,12 @@ int main(int argc, char *argv[]) {
 	fstr.read(shead.get(), MaxIsoHeadSize);
 	const char* head = shead.get();
 
-	size_t iso_size = *(size_t*)(head + Off_IsoSize);
-	size_t lba_data_lst = 0, size_data_lst = 0;
+	uint32_t iso_size = *(uint32_t*)(head + Off_IsoSize);
+	uint32_t lba_data_lst = 0, size_data_lst = 0;
 	for (size_t i = 0; i < MaxIsoHeadSize - sizeof(data_lst); i++) {
 		if (!strcmp(data_lst, head + i)) {
-			lba_data_lst = *(size_t*)(head + i - 0x1F);
-			size_data_lst = *(size_t*)(head + i - 0x17);
+			lba_data_lst = *(uint32_t*)(head + i - 0x1F);
+			size_data_lst = *(uint32_t*)(head + i - 0x17);
 			break;
 		}
 	}
@@ -93,8 +93,8 @@ int main(int argc, char *argv[]) {
 	fstr.read(sdlst.get(), size_data_lst);
 	char* dlst = sdlst.get();
 
-	size_t idx_mc1 = 0;
-	size_t idx_bin = 0;
+	uint32_t idx_mc1 = 0;
+	uint32_t idx_bin = 0;
 	for (auto p = dlst + 4; *p; p += 4) {
 		if (!strcmp(ext_bin, p)) idx_bin = (p - dlst) / 4;
 		else if (!strcmp(ext_mc1, p)) idx_mc1 = (p - dlst) / 4;
@@ -104,13 +104,13 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
-	size_t lba_next = 0;
+	uint32_t lba_next = 0;
 	for (auto di = (DInfo*)(dlst + 0x400); di < (DInfo*)(dlst + size_data_lst + sizeof(DInfo) - 1); di++) {
 		unsigned char type = di->lba >> 24;
 		if (type == 0) continue;
 
-		size_t lba = di->lba & 0xFFFFFF;
-		size_t size = di->size;
+		uint32_t lba = di->lba & 0xFFFFFF;
+		uint32_t size = di->size;
 
 		auto it = scns.end();
 		if (type == idx_bin || type == idx_mc1) {
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
 					uint32_t data[4];
 				};
 
-				for (size_t i = 0; i < cnts; i++) {
+				for (uint32_t i = 0; i < cnts; i++) {
 					Mc1Data* md = (Mc1Data*)(data_mc1 + 0x10 + sizeof(Mc1Data) * i);
 					if (md->name == scn.first) {
 						md->name[0] = '_';
@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
 			fstr.seekp(scn.second.lba * LbaAlign, ios::beg);
 			fstr.write(scn.second.data.get(), scn.second.size);
 
-			size_t gap = lba_next * LbaAlign - (scn.second.lba * LbaAlign + scn.second.size);
+			uint32_t gap = lba_next * LbaAlign - (scn.second.lba * LbaAlign + scn.second.size);
 			if (gap > 0) {
 				unique_ptr<char[]> bub_gap = make_unique<char[]>(gap);
 				fill(bub_gap.get(), bub_gap.get() + gap, 0);
@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
 	fstr.write(dlst, size_data_lst);
 
 	if(iso_size < lba_next) {
-		char *psize = (char*)lba_next;
+		char *psize = (char*)&lba_next;
 		char size_buff[8];
 		for (unsigned i = 0; i < 4; i++) size_buff[i] = psize[i];
 		for (unsigned i = 0; i < 4; i++) size_buff[4 + i] = psize[3 - i];

@@ -74,10 +74,8 @@ bool DoHook() {
 		}
 	}
 
-	_len_prefix = 0;
-
-	for(int i = 0; g_game->path[i]; i++, _len_prefix++) {
-		_buff_voicefile[_len_prefix] = g_game->path[i];
+	for(_len_prefix = 0; g_game->path[_len_prefix]; _len_prefix++) {
+		_buff_voicefile[_len_prefix] = g_game->path[_len_prefix];
 	}
 	for(int i = 0; g_game->ext[i]; i++, _len_prefix++) {
 		_buff_voicefile[_len_prefix] = g_game->ext[i];
@@ -88,6 +86,7 @@ bool DoHook() {
 	_len_prefix += sizeof(VOICE_FILE_PREFIX) - 1;
 
 	LOG("addr voice file: 0x%08X", (unsigned)_buff_voicefile);
+	LOG("len prefix: %d", _len_prefix);
 
 	return true;
 }
@@ -107,5 +106,5 @@ void H_voice(const char* p) {
 	*t++ = '.';
 	for(unsigned i = 0; i < sizeof(g_game->ext); i++) *t++ = g_game->ext[i];
 
-	PlaySound(g_game->path, VOLUME_MAX, g_game->initSfCall);
+	PlaySound(_buff_voicefile, VOLUME_MAX, g_game->initSfCall);
 }

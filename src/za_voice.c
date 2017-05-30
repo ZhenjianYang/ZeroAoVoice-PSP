@@ -16,10 +16,10 @@ static GameInfo _game;
 const GameInfo * const g_game = &_game;
 
 #define UMDID_ZERO "NPJH-50311"
-#define PATH_BASE_ZERO "ms0:/za_voice/zero/"
+#define PATH_BASE_ZERO "ms0:/PSP/za_voice/zero/"
 
 #define UMDID_AO "NPJH-50473"
-#define PATH_BASE_AO "ms0:/za_voice/ao/"
+#define PATH_BASE_AO "ms0:/PSP/za_voice/ao/"
 
 static const struct {
 	const char ext[4];

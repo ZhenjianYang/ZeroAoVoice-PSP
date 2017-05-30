@@ -7,7 +7,7 @@
 #include <psprtc.h>
 #include <pspdebug.h>
 
-#define LOG_FILENAME "ms0:/za_voice/log.txt"
+#define LOG_FILENAME "ms0:/PSP/za_voice/log.txt"
 
 #define LOG(format, ...) { \
 pspTime time;\

@@ -8,7 +8,7 @@ __asm__(
 	"    li   $a0, 'v' "								BREAK
 	"    bne  $a0, $a1, voice_return"					BREAK
 	"    add  $a0, $s0, $zero"							BREAK
-	"    jal  H_voice"									BREAK
+	"    j    H_voice"									BREAK
 	"voice_return:"										BREAK
 	"    jr   $ra"										BREAK
 );

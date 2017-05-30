@@ -6,7 +6,7 @@
 
 #ifdef DEBUG
 #include <pspiofilemgr.h>
-#define LOG_FILE "ms0:/za_voice/load_log.bin"
+#define LOG_FILE "ms0:/PSP/za_voice/load_log.bin"
 #define LOG(_id, value) { \
 unsigned id = _id;\
 SceUID f = sceIoOpen(LOG_FILE, PSP_O_WRONLY | PSP_O_CREAT | PSP_O_APPEND, 0777);\
@@ -43,7 +43,7 @@ sceIoClose(f);\
 PSP_MODULE_INFO(EbootLoader, PSP_MODULE_USER, 1, 0);
 
 #define PathOldBoot  "disc0:/PSP_GAME/SYSDIR/BOOT.BIN"
-#define PathPrx "ms0:/za_voice/za_voice.prx"
+#define PathPrx "ms0:/PSP/za_voice/za_voice.prx"
 
 static int main_thread(SceSize args, void *argp) {
 	SceCtrlData pad;

@@ -165,14 +165,14 @@ static int readThread(SceSize args, void *argp) {
 			}
 		} else if(req & ReadFirstHalfRequest) {
 			read_left = _sf.Read(_soundbuff, SMPNUM_HALFBUFF);
-			if(read_left == 0 && read_right < SMPNUM_HALFBUFF) {
+			if(read_left == 0 && read_right == 0) {
 				EventSet(_evh_sound, StopPlayRequest);
 				_sf.Close();
 				EventWait(_evh_read, StopPlayDone, EVENT_WAITAND | EVENT_WAITCLEAR);
 			}
 		} else if(req & ReadSecondHalfRequest) {
 			read_right = _sf.Read(_soundbuff + SMPNUM_HALFBUFF, SMPNUM_HALFBUFF);
-			if(read_right == 0 && read_left < SMPNUM_HALFBUFF) {
+			if(read_right == 0 && read_left == 0) {
 				EventSet(_evh_sound, StopPlayRequest);
 				_sf.Close();
 				EventWait(_evh_read, StopPlayDone, EVENT_WAITAND | EVENT_WAITCLEAR);
@@ -188,8 +188,8 @@ bool InitPlayer() {
 	_evh_read = EventCreate(false, 0);
 	_mt = MutexCreate();
 
-	_th_sound = sceKernelCreateThread("soundThread", soundThread, 0x30, 0x1000, 0, 0);
-	_th_read = sceKernelCreateThread("readThread", readThread, 0x30, 0x4000, 0, 0);
+	_th_sound = sceKernelCreateThread("soundThread", soundThread, 0x10, 0x1000, 0, 0);
+	_th_read = sceKernelCreateThread("readThread", readThread, 0x10, 0x4000, 0, 0);
 
 	if (_th_sound >= 0 && _th_read >= 0 && _evh_sound && _evh_read && _mt) {
 		sceKernelStartThread(_th_sound, 0, 0);

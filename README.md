@@ -42,7 +42,8 @@ Then you will get 4 files under folder "bin" :
 
 3.  Decrypt **EBOOT.BIN** with **PRXdecrypter 2.7a** (Runs on a PSP or PSVita) or **PPSSPP** (Check on **_Setting_** -> **_Tools_** ->
     **_Developer tools_** -> **_Dump decrypted EBOOT.BIN on game boot_**, and run the game. Then you will get decrypted EBOOT.BIN under
-    **(memorystick)/PSP/SYSTEM/DUMP** with a name like **(game-id).bin)**.  (**This step is NOT required if you run the game with PPSSPP**)
+    **(memorystick)/PSP/SYSTEM/DUMP** with a name like **(game-id).bin)**.   
+    (**This step is NOT required if you run the game with PPSSPP**)
 
 4.  Rename decrypted **EBOOT.BIN** to **BOOT.BIN**
 

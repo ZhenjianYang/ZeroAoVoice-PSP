@@ -89,15 +89,15 @@ Then you will get 4 files under folder "bin" :
     The original voice files in the "Evo" edition are at9 files. You can convert them to wav files with at9tool.  
     And then convert them to supported formats list below:
 
-    - **wav**  
+    - **wav**   
         None compressive format. Lowest CPU pressure.  
         But it costs more I/O time because the data is such big.
 
-    - **ogg** 
+    - **ogg**   
         Software decoding.  
         You can convert wav to ogg with [oggenc2](http://www.rarewares.org/ogg-oggenc.php).
 
-    - **at3** 
+    - **at3**   
         Hardware decoding.  
         You can convert wav to at3 with at3tool.   
         at3tool can only convert a wav with sample rate 44100Hz, but the original voice files' sample rate

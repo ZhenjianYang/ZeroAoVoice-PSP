@@ -49,14 +49,14 @@ Then you will get 4 files under folder "bin" :
 
 5.  Drag **PARAM.SFO**, **BOOT.BIN**, and **EBOOT.BIN** built above back to the game image. Now you can close WQSG_UMD.
 
-6.  Extract voice files(*.at9) from the PSVita edition game ("Evo" edition), and convert them to supported formats(describe later).
+6.  Extract voice files(*.at9) from the PSVita edition game ("Evo" edition), and convert them to supported formats(describe later).   
+    You should keep the voice files' names not changed (except the extention).  
+    **e.g.**  **v1234567.at9** should be converted to **v1234567.wav**, **v1234567.ogg**, etc.
 
 7.  Put converted voice files to **(memorystick)/PSP/za_voice/(game)/(ext)/**  
     **(game)** should be **zero** (for *Zero no Kiseki*) or **ao** (for *Ao no Kiseki*)   
     **(ext)** is the extention of the voice files   
-    And you should keep the voice files' names not changed (except the extention).   
-    **e.g.**  wav format voice files for *Zero no Kiseki* should be put to **(memorystick)/PSP/za_voice/zero/wav/**, with names
-    **v1234567.wav**
+    **e.g.**  wav format voice files for *Zero no Kiseki* should be put to **(memorystick)/PSP/za_voice/zero/wav/**.
 
 8.  Modify extracted script files(*.bin under folder scena) by adding voice instrucions. (Details will be described later)
 

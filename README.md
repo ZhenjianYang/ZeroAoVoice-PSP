@@ -1,7 +1,7 @@
-ZeroAoVoice-PSP
-===============
+# ZeroAoVoice-PSP
 
-This projcet is still in progress, its goal is making voice patches for the PSP games *Zero/Ao no Kiseki*
+This projcet is still in progress, its goal is making voice patches for 
+the PSP games *Zero/Ao no Kiseki*
 
 **NOTE:** This projcet is licensed under the GPLv3. You MUST copy,
 distribute and/or modify any code or binaries from this projcet under
@@ -14,15 +14,14 @@ resources like voice files, Chinese or Japesene texts, scena files,
 etc.) or anything modified from them.
 
 
-1.Build
--------
+## 1.Build
 
 You should install psptoolchain and pspsdk fisrt.
 
 You can build them by following the project [psptoolchain](https://github.com/pspdev/psptoolchain) (with gcc 4.9.3), or
 download and install a prebuild pspsdk [Minimalist PSPSDK](https://sourceforge.net/projects/minpspw/) (with gcc 4.3.5).
 
-After all is ready. You can build this projcet with entering the root path of it and typing command "make".
+After all is ready. You can build this projcet with entering the root path of it and typing command `make`.
 
 Then you will get 4 files under folder "bin" :
 
@@ -33,8 +32,7 @@ Then you will get 4 files under folder "bin" :
 - **EBOOT.PBP** & **PARAM.SFO**  : just for testing, no need to care about them.
 
 
-2.How to let it work
---------------------
+## 2.How to let it work
 
 1.  Donwload [WQSG_UMD](http://www.brewology.com/downloads/download.php?id=11249&mcid=1), and open you PSP game image (.iso) with it.
     Then extract **/PSP_GAME/SYSDIR/EBOOT.BIN**, **PSP_GAME/PARAM.SFO**, and the whole folder **/PSP_GAME/USRDIR/data/scena/**
@@ -60,12 +58,11 @@ Then you will get 4 files under folder "bin" :
 
 10. Now you can launch your game. If everything is OK, you can enjoy the voice like the "Evo" edition.
 
-3.Limitations
--------------
+## 3.Limitations
 
-1.  **Memory.**
+1.  **Memory**
 
-    For tecnical reasons, the main module za_voice.prx runs on user mode. This means it shares the user mode memory with the game.
+    For technical reasons, the main module za_voice.prx runs on user mode. This means it shares the user mode memory with the game.
     As default, the PSP system provides 24MB memory for user mode, and the game will use most of it. Little is left for our module.
     The original PSP model (1000) has no more memory, so there's no way to run our module now. But later models (2000,3000,go) has
     extra 32MB physical memory (for UMD cache), and is possible to enable them for user mode.
@@ -96,11 +93,11 @@ Then you will get 4 files under folder "bin" :
         None compressive format. Lowest CPU pressure.  
         But it costs more I/O time because the data is such big.
 
-    - **ogg**  
+    - **ogg** 
         Software decoding.  
         You can convert wav to ogg with [oggenc2](http://www.rarewares.org/ogg-oggenc.php).
 
-    - **at3**  
+    - **at3** 
         Hardware decoding.  
         You can convert wav to at3 with at3tool.   
         at3tool can only convert a wav with sample rate 44100Hz, but the original voice files' sample rate
@@ -109,24 +106,25 @@ Then you will get 4 files under folder "bin" :
 
     When the game lanching, za_voice.prx will check voice folders in turn, the first one found will be seleted as
     the format. The turn is:  
-    -  **at3** -> **ogg** -> **wav**
+      `at3 -> ogg -> wav`
 
-    **Note for PPSSPP users**   
+    **Note for PPSSPP users:**
+      ~~~~
       It seems there's a bug with PPSSPP.   
       za_voice.prx uses PSP system's APIs sceAudioSRCCh* to play sound files.  
       These APIs supports multiple sample rates : 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11050, 8000  
       But in PPSSPP, no matter which sample rate is set, it will play the sound file as 44100Hz.  
       So you must resample all voice files to 44100Hz if you are using PPSSPP.  
       (oggenc2 supports resampling during conversion) 
+      ~~~~
 
 
-4.About the script files
-------------------------
+## 4.About the script files
 
 1. **Voice instrucions's format**
 
-    The original voice instrucions in "Evo" edition have format like **#123456789V**.   
-    za_voice.prx uses formallar format :  **#123456789v**.  
+    The original voice instrucions in "Evo" edition have format like `#123456789V`.   
+    za_voice.prx uses similar format :  `#123456789v`.  
     The only different is the last letter is lowercase v, because *Ao no Kiseki* has some scene voice and the
     voice instrucions are also uppercase V.
 
@@ -153,8 +151,7 @@ Then you will get 4 files under folder "bin" :
     - Fix script files' offset and size in data.lst
     - Delete all script files' backup in xxxxxx.mc1 (by change their names in xxxxxx.mc1)
 
-External libraries used in this project
----------------------------------------
+## External libraries used in this project
 
 -   [PSPSDK](https://github.com/pspdev/pspsdk), licensed under the
     [BSD 3-clause "New" or "Revised" License](https://github.com/pspdev/pspsdk/blob/master/LICENSE).
@@ -166,8 +163,7 @@ External libraries used in this project
 
 ------------------------------------------------------------------------
 
-ZeroAoVoice-PSP
-===============
+# ZeroAoVoice-PSP
 
 这是进行中的工程，目标为制作PSP游戏《零·碧之轨迹》系列的语音补丁
 
@@ -177,8 +173,7 @@ ZeroAoVoice-PSP
 **注意：** 请勿在此项目中上传任何官方或基于官方修改的资源（游戏本体，或其资源文件如语音文件、中日文本、脚本文件等）
 
 
-本项目使用的外部库
---------------
+## 本项目使用的外部库
 
 -   [PSPSDK](https://github.com/pspdev/pspsdk), 基于
     [BSD 3-clause "New" or "Revised" License](https://github.com/pspdev/pspsdk/blob/master/LICENSE).

@@ -54,7 +54,9 @@ Then you will get 4 files under folder "bin" :
 7.  Put converted voice files to **(memorystick)/PSP/za_voice/(game)/(ext)/**  
     **(game)** should be **zero** (for *Zero no Kiseki*) or **ao** (for *Ao no Kiseki*)   
     **(ext)** is the extention of the voice files   
-    **e.g.**  wav format voice files for *Zero no Kiseki* should be put to **(memorystick)/PSP/za_voice/zero/wav/**
+    And you should keep the voice files' names not changed (except the extention).   
+    **e.g.**  wav format voice files for *Zero no Kiseki* should be put to **(memorystick)/PSP/za_voice/zero/wav/**, with names
+    **v1234567.wav**
 
 8.  Modify extracted script files(*.bin under folder scena) by adding voice instrucions. (Details will be described later)
 

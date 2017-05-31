@@ -10,6 +10,7 @@
 #include "sf_at3.h"
 #include "player.h"
 #include "hook.h"
+#include "hook_asm.h"
 #include "log.h"
 
 static GameInfo _game;
@@ -132,7 +133,8 @@ int InitZaVoice(unsigned args, void *argp)
 	if (!DoHook()) return 0;
 	LOG("DoHook Finished.");
 
-	if (!InitPlayer()) return 0;
+	InitPlayerParam ipp = { &h_dududu_volume, &h_dlgse_volume };
+	if (!InitPlayer(&ipp)) return 0;
 	LOG("InitPlayer Finished.");
 
 	LOG("All init Done.");

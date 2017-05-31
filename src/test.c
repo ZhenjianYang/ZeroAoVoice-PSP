@@ -226,7 +226,7 @@ int main(void)
 	} else {
 		LOG("Load libatrac3plus failed.");
 	}
-	InitPlayer();
+	InitPlayer(NULL);
 	LOG("InitSound Finished.");
 
 	while(1) {

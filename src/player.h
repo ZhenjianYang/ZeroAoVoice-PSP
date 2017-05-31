@@ -6,7 +6,12 @@
 extern "C" {
 #endif // __cplusplus
 
-bool InitPlayer();
+typedef struct InitPlayerParam {
+	int* p_h_dududu_volume;
+	int* p_h_dlgse_volume;
+} InitPlayerParam;
+
+bool InitPlayer(InitPlayerParam* initPlayerParam);
 
 bool EndPlayer();
 

@@ -22,18 +22,26 @@ enum HookType {
 };
 
 static const u32 HookAddrList_Zero[] = {
-	0x088F4C54,
+	0x088F4C54, //voice instruction
+	0x088F652C, //dududu
+	0x088F63FC, //dlgse
 };
 
 static const u32 HookAddrList_Ao[] = {
+	0x0,
+	0x0,
 	0x0,
 };
 
 static const u32* HookAddrList;
 static const u32 HookOperandList[] = {
 	(u32)&h_voice,
+	(u32)&h_dududu,
+	(u32)&h_dlgse,
 };
 static const u32 HookTyperList[] = {
+	HookType_JAL,
+	HookType_JAL,
 	HookType_JAL,
 };
 static u32 _AddrAdjust;
@@ -47,10 +55,14 @@ static u32 _AddrAdjust;
 static char _buff_voicefile[64];
 static int _len_prefix;
 
+//////////////////////////////////////////////////////////////////////////////
+
 bool DoHook() {
 	HookAddrList = g_game->game == Game_Zero ? HookAddrList_Zero : HookAddrList_Ao;
 	_AddrAdjust = g_game->base - STD_BASE;
 	for(unsigned i = 0; i < HookCount; i++) {
+		LOG("Hook addr = 0x%08X, type = 0x%08X, Operand = 0x%08X",
+				HookAddrList[i] + _AddrAdjust, HookTyperList[i], HookOperandList[i]);
 		if(!HookAddrList[i]) continue;
 
 		u32* pDst = (u32*)(HookAddrList[i] + _AddrAdjust);
@@ -64,7 +76,7 @@ bool DoHook() {
 		} else if (HookTyperList[i] & HookType_FixOP) {
 			*pDst = HookOperandList[i];
 		} else if (HookTyperList[i] & (HookType_JAL | HookType_J)) {
-			unsigned new_code = HookTyperList[i] & HookType_JAL ? CODE_JAL : CODE_J;
+			u32 new_code = HookTyperList[i] & HookType_JAL ? CODE_JAL : CODE_J;
 			new_code |= CODE_JMsk & (HookOperandList[i] >> 2);
 			*pDst = new_code;
 
@@ -92,6 +104,11 @@ bool DoHook() {
 }
 bool CleanHook() { return true; }
 
+
+////////////////////////////////////////////////////
+
+int h_dududu_volume = 0x64;
+int h_dlgse_volume = 0x64;
 
 void H_voice(const char* p) {
 	if(*p != 'v') return;

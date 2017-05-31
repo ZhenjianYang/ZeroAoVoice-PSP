@@ -1,7 +1,7 @@
 # ZeroAoVoice-PSP
 
 This projcet is still in progress, its goal is making voice patches for 
-the PSP games *Zero/Ao no Kiseki*
+the PSP games *Zero no Kiseki* & *Ao no Kiseki*
 
 **NOTE:** This projcet is licensed under the GPLv3. You MUST copy,
 distribute and/or modify any code or binaries from this projcet under
@@ -37,26 +37,31 @@ Then you will get 4 files under folder "bin" :
 1.  Donwload [WQSG_UMD](http://www.brewology.com/downloads/download.php?id=11249&mcid=1), and open you PSP game image (.iso) with it.
     Then extract **/PSP_GAME/SYSDIR/EBOOT.BIN**, **PSP_GAME/PARAM.SFO**, and the whole folder **/PSP_GAME/USRDIR/data/scena/**
 
-2.  Open extracted **PARAM.SFO** with [SFOEditor](https://sites.google.com/site/theleecherman/sfoeditor) and add a param **MEMSIZE** with value **1**
+2.  Open extracted **PARAM.SFO** with [SFOEditor](https://sites.google.com/site/theleecherman/sfoeditor) and add a param **MEMSIZE**
+    with value **1**
 
-3.  Rename extracted **EBOOT.BIN** to **BOOT.BIN**
+3.  Decrypt **EBOOT.BIN** with **PRXdecrypter 2.7a** (Runs on a PSP or PSVita) or **PPSSPP** (Check on **_Setting_** -> **_Tools_** ->
+    **_Developer tools_** -> **_Dump decrypted EBOOT.BIN on game boot_**, and run the game. Then you will get decrypted EBOOT.BIN under
+    **(memorystick)/PSP/SYSTEM/DUMP** with a name like **(game-id).bin)**.  (**This step is NOT required if you run the game with PPSSPP**)
 
-4.  Drag **PARAM.SFO**, **BOOT.BIN**, and **EBOOT.BIN** built above back to the game image. Now you can close WQSG_UMD.
+4.  Rename decrypted **EBOOT.BIN** to **BOOT.BIN**
 
-5.  Extract voice files(*.at9) from the PSVita edition game ("Evo" edition), and convert them to supported formats(describe later).
+5.  Drag **PARAM.SFO**, **BOOT.BIN**, and **EBOOT.BIN** built above back to the game image. Now you can close WQSG_UMD.
 
-6.  Put converted voice files to **(memorystick)/PSP/za_voice/(game)/(ext)/**  
+6.  Extract voice files(*.at9) from the PSVita edition game ("Evo" edition), and convert them to supported formats(describe later).
+
+7.  Put converted voice files to **(memorystick)/PSP/za_voice/(game)/(ext)/**  
     **(game)** should be **zero** (for *Zero no Kiseki*) or **ao** (for *Ao no Kiseki*)   
     **(ext)** is the extention of the voice files   
     **e.g.**  wav format voice files for *Zero no Kiseki* should be put to **(memorystick)/PSP/za_voice/zero/wav/**
 
-7.  Modify extracted script files(*.bin under folder scena) by adding voice instrucions. (Details will be described later)
+8.  Modify extracted script files(*.bin under folder scena) by adding voice instrucions. (Details will be described later)
 
-8.  Add Modified script files to game image. (Details will be described later)
+9.  Add Modified script files to game image. (Details will be described later)
 
-9.  Put **za_voice.prx** to **(memorystick)/PSP/za_voice/**
+10.  Put **za_voice.prx** to **(memorystick)/PSP/za_voice/**
 
-10. Now you can launch your game. If everything is OK, you can enjoy the voice like the "Evo" edition.
+11. Now you can launch your game. If everything is OK, you can enjoy the voice like the "Evo" edition.
 
 ## 3.Limitations
 
@@ -72,13 +77,13 @@ Then you will get 4 files under folder "bin" :
 
     - **PSVita (Henkaku, Adrenaline 4.1)**   
       Enable extra memory by   
-      XMB -> ADRENALINE VSH MENU -> RECOVERY MENU -> Advanced -> Advanced configuration ->   
-      Set **Force high memory layout** to **Enable**
+      **_XMB_** -> **_ADRENALINE VSH MENU_** -> **_RECOVERY MENU_** -> **_Advanced_** -> **_Advanced configuration_** ->   
+      Set **_Force high memory layout_** to **_Enable_**
 
     - **PPSSPP**   
       Enable extra memory by   
-      Settings -> System ->   
-      Set **PSP model** to **PSP-2000/3000**
+      **_Settings_** -> **_System_** ->   
+      Set **_PSP model_** to **_PSP-2000/3000_**
 
     - **Real PSP 2000/3000/go/E1000**   
       There should be a way to enable the extra memory.   
@@ -136,7 +141,7 @@ Then you will get 4 files under folder "bin" :
     3. **Re-compile the scripts**
 
     About how to decompile/recompile script files, pelease refer to [this projcet](https://github.com/ZhenjianYang/EDDecompiler)   
-    And in [this project](https://github.com/ZhenjianYang/SoraVoice), there may be some tools could help during step 2.
+    And in [this project](https://github.com/ZhenjianYang/SoraVoice), there may be some tools useful for step 2.
 
 3. **Add modified script files to game image**
 

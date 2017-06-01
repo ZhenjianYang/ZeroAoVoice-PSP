@@ -12,6 +12,9 @@ extern int h_dududu_volume;
 
 extern void h_dlgse();
 extern int h_dlgse_volume;
+extern unsigned h_sub_se;
+
+void H_stop_voice();
 
 #ifdef __cplusplus
 }

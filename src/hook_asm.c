@@ -25,11 +25,23 @@ __asm__(
 __asm__(
 	".global h_dlgse"									BREAK
 	"h_dlgse:"											BREAK
+	"    addiu   $sp, $sp, -4"					        BREAK
+	"    sw      $ra, 0($sp)"					        BREAK
 	"    lui     $t4, %hi(h_dlgse_volume)"				BREAK
 	"    addiu   $t4, %lo(h_dlgse_volume)"				BREAK
 	"    lw      $t0,   0($t4)"							BREAK
 	"    li      $t5,   0x64"							BREAK
 	"    sw      $t5,   0($t4)"							BREAK
+	"    lui     $t4, %hi(h_sub_se)"					BREAK
+	"    addiu   $t4, %lo(h_sub_se)"					BREAK
+	"    lw      $t4,   0($t4)"							BREAK
+	"    jal     get_pc"								BREAK
+	"get_pc:"											BREAK
+	"    addiu   $ra, $ra, 8"							BREAK
+	"    jr      $t4"									BREAK
+	"    jal     H_stop_voice"							BREAK
+	"    lw      $ra, 0($sp)"							BREAK
+	"    addiu   $sp, $sp, 4"							BREAK
 	"    jr      $ra"									BREAK
 );
 

@@ -27,8 +27,8 @@ enum PlayEvents {
 	StopPlayDone = 1 << 11,
 	PlayDone = 1 << 12,
 
-	NewFileRequest = 1 << 20,
-	CloseFileRequest = 1 << 21,
+	NewSoundRequest = 1 << 20,
+	StopSoundRequest = 1 << 21,
 	ReadFirstHalfRequest = 1 << 22,
 	ReadSecondHalfRequest = 1 << 23,
 
@@ -101,21 +101,21 @@ static int readThread(SceSize args, void *argp) {
 	int read_left = SMPNUM_HALFBUFF, read_right = SMPNUM_HALFBUFF;
 	for (;;) {
 		EventFlags req = EventWait(_evh_read,
-				NewFileRequest | CloseFileRequest | ReadFirstHalfRequest | ReadSecondHalfRequest | EndReadRequest,
+				NewSoundRequest | StopSoundRequest | ReadFirstHalfRequest | ReadSecondHalfRequest | EndReadRequest,
 				EVENT_WAITOR | EVENT_WAITCLEAR);
 		if (req & EndReadRequest) {
+			*_param.p_h_dlgse_volume = *_param.p_h_dududu_volume = H_VOLUME_MAX;
 			if(_sf.Close) _sf.Close();
 			if(_audioId >= 0) {
 				sceAudioSRCChRelease();
 			}
-			*_param.p_h_dlgse_volume = *_param.p_h_dududu_volume = H_VOLUME_MAX;
 			break;
-		} else if(req & CloseFileRequest) {
+		} else if(req & StopSoundRequest) {
+			*_param.p_h_dlgse_volume = *_param.p_h_dududu_volume = H_VOLUME_MAX;
 			EventSet(_evh_sound, StopPlayRequest);
 			if(_sf.Close) _sf.Close();
 			EventWait(_evh_read, StopPlayDone, EVENT_WAITAND | EVENT_WAITCLEAR);
-			*_param.p_h_dlgse_volume = *_param.p_h_dududu_volume = H_VOLUME_MAX;
-		} else if(req & NewFileRequest) {
+		} else if(req & NewSoundRequest) {
 			*_param.p_h_dlgse_volume = *_param.p_h_dududu_volume = H_VOLUME_MUTE;
 			EventSet(_evh_sound, StopPlayRequest);
 			if(_sf.Close) _sf.Close();
@@ -244,6 +244,7 @@ bool EndPlayer() {
 
 bool PlaySound(const char* filename, int volume, InitSfCall initSf) {
 	LOG("File: %s, volume = 0x%04X, init = 0x%08X", filename, volume, (unsigned)initSf);
+
 	MutexLock(_mt);
 	_volume = volume;
 	_initSfCall = initSf;
@@ -252,12 +253,16 @@ bool PlaySound(const char* filename, int volume, InitSfCall initSf) {
 	}
 	_fileName[sizeof(_fileName) - 1] = '\0';
 	MutexUnlock(_mt);
-	EventSet(_evh_read, NewFileRequest);
+
+	*_param.p_h_dlgse_volume = *_param.p_h_dududu_volume = H_VOLUME_MUTE;
+	EventClear(_evh_read, StopSoundRequest);
+	EventSet(_evh_read, NewSoundRequest);
 	return true;
 }
 
 bool StopSound() {
-	EventSet(_evh_read, CloseFileRequest);
+	EventSet(_evh_read, StopSoundRequest);
+	LOG("Stop is called.");
 	return true;
 }
 

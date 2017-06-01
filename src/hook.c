@@ -18,13 +18,14 @@ enum HookType {
 	HookType_JAL = 1 << 0,
 	HookType_J = 1 << 1,
 
-	HookType_ClearDelay = 1 << 10
+	HookType_ClearDelay = 1 << 10,
+	HookType_SaveOldJmpAddr = 1 << 11
 };
 
 static const u32 HookAddrList_Zero[] = {
 	0x088F4C54, //voice instruction
 	0x088F652C, //dududu
-	0x088F63FC, //dlgse
+	0x088F6408, //dlgse
 };
 
 static const u32 HookAddrList_Ao[] = {
@@ -39,10 +40,15 @@ static const u32 HookOperandList[] = {
 	(u32)&h_dududu,
 	(u32)&h_dlgse,
 };
+static const u32 HookOperand2List[] = {
+	0,
+	0,
+	(u32)&h_sub_se,
+};
 static const u32 HookTyperList[] = {
 	HookType_JAL,
 	HookType_JAL,
-	HookType_JAL,
+	HookType_JAL | HookType_SaveOldJmpAddr,
 };
 static u32 _AddrAdjust;
 #define HookCount (sizeof(HookTyperList) / sizeof(*HookTyperList))
@@ -78,6 +84,11 @@ bool DoHook() {
 		} else if (HookTyperList[i] & (HookType_JAL | HookType_J)) {
 			u32 new_code = HookTyperList[i] & HookType_JAL ? CODE_JAL : CODE_J;
 			new_code |= CODE_JMsk & (HookOperandList[i] >> 2);
+
+			if(HookTyperList[i] & HookType_SaveOldJmpAddr) {
+				*(u32*)HookOperand2List[i] = (*pDst & CODE_JMsk) << 2;
+			}
+
 			*pDst = new_code;
 
 			if(HookTyperList[i] & HookType_ClearDelay) {
@@ -109,6 +120,11 @@ bool CleanHook() { return true; }
 
 int h_dududu_volume = 0x64;
 int h_dlgse_volume = 0x64;
+unsigned h_sub_se;
+
+void H_stop_voice() {
+	StopSound();
+}
 
 void H_voice(const char* p) {
 	if(*p != 'v') return;

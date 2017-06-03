@@ -1,6 +1,6 @@
 #pragma once
 
-#include "type.h"
+#include "basic_type.h"
 
 #define Tag_RIFF 0x46464952
 #define Tag_WAVE 0x45564157

@@ -1,23 +1,26 @@
 #pragma once
 
-#include "sf.h"
+#include "basic_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-typedef struct InitPlayerParam {
-	int* p_h_dududu_volume;
-	int* p_h_dlgse_volume;
-} InitPlayerParam;
+typedef struct Play {
+	const char* filename;
+	int volume;
+	void* initSf;
+} Play;
 
-bool InitPlayer(InitPlayerParam* initPlayerParam);
+bool InitPlayer();
 
 bool EndPlayer();
 
-bool PlaySound(const char* filename, int volume, InitSfCall initSf);
+bool PlaySound(struct Play* play);
 
 bool StopSound();
+
+bool SetVolume(int volume);
 
 #ifdef __cplusplus
 }

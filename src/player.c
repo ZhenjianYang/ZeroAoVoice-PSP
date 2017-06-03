@@ -2,6 +2,8 @@
 #include <pspthreadman.h>
 
 #include "player.h"
+#include "global.h"
+#include "sf.h"
 #include "event.h"
 #include "mutex.h"
 #include "log.h"
@@ -51,11 +53,6 @@ static SceUID _th_read = -1;
 static int _pos = 0;
 static SampleType _soundbuff[SMPNUM_BUFF][CHANNELS];
 
-static int _fake_h_volume = 0;
-static InitPlayerParam _param = { &_fake_h_volume, &_fake_h_volume };
-#define H_VOLUME_MAX 0x64
-#define H_VOLUME_MUTE 0
-
 static int soundThread(SceSize args, void *argp) {
 	for(;;) {
 		EventFlags req = EventWait(_evh_sound,
@@ -104,19 +101,16 @@ static int readThread(SceSize args, void *argp) {
 				NewSoundRequest | StopSoundRequest | ReadFirstHalfRequest | ReadSecondHalfRequest | EndReadRequest,
 				EVENT_WAITOR | EVENT_WAITCLEAR);
 		if (req & EndReadRequest) {
-			*_param.p_h_dlgse_volume = *_param.p_h_dududu_volume = H_VOLUME_MAX;
 			if(_sf.Close) _sf.Close();
 			if(_audioId >= 0) {
 				sceAudioSRCChRelease();
 			}
 			break;
 		} else if(req & StopSoundRequest) {
-			*_param.p_h_dlgse_volume = *_param.p_h_dududu_volume = H_VOLUME_MAX;
 			EventSet(_evh_sound, StopPlayRequest);
 			if(_sf.Close) _sf.Close();
 			EventWait(_evh_read, StopPlayDone, EVENT_WAITAND | EVENT_WAITCLEAR);
 		} else if(req & NewSoundRequest) {
-			*_param.p_h_dlgse_volume = *_param.p_h_dududu_volume = H_VOLUME_MUTE;
 			EventSet(_evh_sound, StopPlayRequest);
 			if(_sf.Close) _sf.Close();
 			EventWait(_evh_read, StopPlayDone, EVENT_WAITAND | EVENT_WAITCLEAR);
@@ -127,7 +121,8 @@ static int readThread(SceSize args, void *argp) {
 
 			if(!ok) {
 				LOG("Open Failed.");
-				*_param.p_h_dlgse_volume = *_param.p_h_dududu_volume = H_VOLUME_MAX;
+				g.order.disableDududu = 0; g.order.disableDlgSe = 0;
+				g.autoPlay.fm_voice_start = g.autoPlay.fm_voice_auto = 0;
 				continue;
 			}
 
@@ -145,6 +140,12 @@ static int readThread(SceSize args, void *argp) {
 				_sf.blockAlign,
 				_sf.samplesTotal
 			);
+
+			if(g.autoPlay.scode) {
+				g.autoPlay.fm_voice_start = *g.pfm_cnt;
+				g.autoPlay.fm_voice_auto = g.autoPlay.fm_voice_start +
+					_sf.samplesTotal * FPS / _sf.samplesPerSec + g.config.WaitTimeDialogWithVoice * FPS / TIME_UNITS_PER_SEC;
+			}
 
 			read_left = _sf.Read(_soundbuff, SMPNUM_HALFBUFF);
 			read_right = SMPNUM_HALFBUFF;
@@ -178,7 +179,6 @@ static int readThread(SceSize args, void *argp) {
 				EventSet(_evh_sound, StopPlayRequest);
 				_sf.Close();
 				EventWait(_evh_read, StopPlayDone, EVENT_WAITAND | EVENT_WAITCLEAR);
-				*_param.p_h_dududu_volume = H_VOLUME_MAX;
 			}
 		} else if(req & ReadSecondHalfRequest) {
 			read_right = _sf.Read(_soundbuff + SMPNUM_HALFBUFF, SMPNUM_HALFBUFF);
@@ -186,7 +186,6 @@ static int readThread(SceSize args, void *argp) {
 				EventSet(_evh_sound, StopPlayRequest);
 				_sf.Close();
 				EventWait(_evh_read, StopPlayDone, EVENT_WAITAND | EVENT_WAITCLEAR);
-				*_param.p_h_dududu_volume = H_VOLUME_MAX;
 			}
 		}
 	}
@@ -194,7 +193,7 @@ static int readThread(SceSize args, void *argp) {
 	return sceKernelExitDeleteThread(0);
 }
 
-bool InitPlayer(InitPlayerParam* initPlayerParam) {
+bool InitPlayer() {
 	_evh_sound = EventCreate(false, 0);
 	_evh_read = EventCreate(false, 0);
 	_mt = MutexCreate();
@@ -223,10 +222,6 @@ bool InitPlayer(InitPlayerParam* initPlayerParam) {
 
 	_volume = PSP_AUDIO_VOLUME_MAX;
 
-	if(initPlayerParam) {
-		if(initPlayerParam->p_h_dlgse_volume) _param.p_h_dlgse_volume = initPlayerParam->p_h_dlgse_volume;
-		if(initPlayerParam->p_h_dududu_volume) _param.p_h_dududu_volume = initPlayerParam->p_h_dududu_volume;
-	}
 	return true;
 }
 
@@ -242,26 +237,35 @@ bool EndPlayer() {
 	return true;
 }
 
-bool PlaySound(const char* filename, int volume, InitSfCall initSf) {
-	LOG("File: %s, volume = 0x%04X, init = 0x%08X", filename, volume, (unsigned)initSf);
+bool PlaySound(struct Play* play) {
+	LOG("File: %s, volume = 0x%04X, init = 0x%08X", play->filename, play->volume, (unsigned)play->initSf);
 
 	MutexLock(_mt);
-	_volume = volume;
-	_initSfCall = initSf;
-	for(unsigned i = 0; i < sizeof(_fileName) && filename[i]; i++) {
-		_fileName[i] = filename[i];
+	_volume = play->volume;
+	_initSfCall = (InitSfCall)play->initSf;
+	for(unsigned i = 0; i < sizeof(_fileName) && play->filename[i]; i++) {
+		_fileName[i] = play->filename[i];
 	}
 	_fileName[sizeof(_fileName) - 1] = '\0';
 	MutexUnlock(_mt);
 
-	*_param.p_h_dlgse_volume = *_param.p_h_dududu_volume = H_VOLUME_MUTE;
+	g.order.disableDududu = g.order.disableDlgSe = 1;
+	if(g.autoPlay.scode) {
+		g.autoPlay.fm_voice_start = g.autoPlay.fm_voice_auto = 0xFFFFFFFF;
+	}
+
 	EventClear(_evh_read, StopSoundRequest);
 	EventSet(_evh_read, NewSoundRequest);
 	return true;
 }
 
 bool StopSound() {
-	EventSet(_evh_read, StopSoundRequest);
+	g.order.disableDududu = g.order.disableDlgSe = 0;
+	g.autoPlay.fm_voice_start = g.autoPlay.fm_voice_auto = 0;
+
+	if(g.config.SkipVoice) {
+		EventSet(_evh_read, StopSoundRequest);
+	}
 	LOG("Stop is called.");
 	return true;
 }

@@ -1,26 +1,27 @@
 #include <pspmodulemgr.h>
 #include <pspmodulemgr.h>
 
+#include "basic_type.h"
 #include "za_voice.h"
-#include "za_voice_i.h"
-#include "type.h"
 #include "io.h"
 #include "sf_wav.h"
 #include "sf_ogg.h"
 #include "sf_at3.h"
 #include "player.h"
 #include "hook.h"
-#include "hook_asm.h"
+#include "config.h"
+#include "global.h"
 #include "log.h"
 
-static GameInfo _game;
-const GameInfo * const g_game = &_game;
+Global g;
 
 #define UMDID_ZERO "NPJH-50311"
 #define PATH_BASE_ZERO "ms0:/PSP/za_voice/zero/"
 
 #define UMDID_AO "NPJH-50473"
 #define PATH_BASE_AO "ms0:/PSP/za_voice/ao/"
+
+#define PATH_CONFIG "ms0:/PSP/za_voice/za_voice.ini"
 
 static const struct {
 	const char ext[4];
@@ -34,13 +35,13 @@ static const struct {
 #define PATH_UMD_DATA "disc0:/UMD_DATA.BIN"
 #define LEN_UMDID 10
 
-static inline int StrCmp(const char* s1, const char *s2) {
+static inline int Strcmp(const char* s1, const char *s2) {
 	while(*s1 == *s2 && *s1) s1++, s2++;
 	return (unsigned char)*s1 - (unsigned char)*s2;
 }
 
 static bool initGame(SceUID mid_boot) {
-	_game.game = Game_Invalid;
+	g.game = Game_Unknown;
 
 	LOG("Getting UMD ID...");
 	IoHandle ioh = IoFOpen(PATH_UMD_DATA, IO_O_RDONLY);
@@ -60,18 +61,18 @@ static bool initGame(SceUID mid_boot) {
 	LOG("UMD ID : %s", buff_umdid);
 
 	unsigned len_path = 0;
-	if(!StrCmp(buff_umdid, UMDID_ZERO)) {
-		_game.game = Game_Zero;
-		for(unsigned i = 0; i < sizeof(UMDID_ZERO); i++) _game.umdId[i] = UMDID_ZERO[i];
-		for(unsigned i = 0; i < sizeof(PATH_BASE_ZERO); i++) _game.path[i] = PATH_BASE_ZERO[i];
+	if(!Strcmp(buff_umdid, UMDID_ZERO)) {
+		g.game = Game_Zero;
+		for(unsigned i = 0; i < sizeof(UMDID_ZERO); i++) g.umdId[i] = UMDID_ZERO[i];
+		for(unsigned i = 0; i < sizeof(PATH_BASE_ZERO); i++) g.path[i] = PATH_BASE_ZERO[i];
 		len_path = sizeof(PATH_BASE_ZERO) - 1;
-	} else if(!StrCmp(buff_umdid, UMDID_AO)) {
-		_game.game = Game_Ao;
-		for(unsigned i = 0; i < sizeof(UMDID_AO); i++) _game.umdId[i] = UMDID_AO[i];
-		for(unsigned i = 0; i < sizeof(PATH_BASE_AO); i++) _game.path[i] = PATH_BASE_AO[i];
+	} else if(!Strcmp(buff_umdid, UMDID_AO)) {
+		g.game = Game_Ao;
+		for(unsigned i = 0; i < sizeof(UMDID_AO); i++) g.umdId[i] = UMDID_AO[i];
+		for(unsigned i = 0; i < sizeof(PATH_BASE_AO); i++) g.path[i] = PATH_BASE_AO[i];
 		len_path = sizeof(PATH_BASE_AO) - 1;
 	}
-	if(_game.game == Game_Invalid) {
+	if(g.game == Game_Unknown) {
 		LOG("No matched UMDID found.");
 		return false;
 	}
@@ -82,10 +83,10 @@ static bool initGame(SceUID mid_boot) {
 		LOG("Got module info failed.");
 		return false;
 	}
-	_game.base = info.segmentaddr[0];
+	g.mod_base = info.segmentaddr[0];
 
 	LOG("finding Voice dir ...");
-	_game.ext[0] = '\0';
+	g.voice_ext[0] = '\0';
 	for(unsigned i = 0; i < sizeof(_sfs) / sizeof(*_sfs); i++) {
 		LOG("Checking %s ...", _sfs[i].ext);
 		if(!_sfs[i].initSfCall) {
@@ -93,32 +94,19 @@ static bool initGame(SceUID mid_boot) {
 			continue;
 		}
 
-		for(unsigned j = 0; j < sizeof(_game.ext); j++) _game.path[len_path + j] = _sfs[i].ext[j];
-		LOG("Checking dir %s ...", _game.path);
-		if(IoDirExists(_game.path)) {
-			_game.initSfCall = _sfs[i].initSfCall;
-			for(unsigned k = 0; k < sizeof(_game.ext); k++) _game.ext[k] = _sfs[i].ext[k];
-			_game.path[len_path] = '\0';
+		for(unsigned j = 0; j < sizeof(g.voice_ext); j++) g.path[len_path + j] = _sfs[i].ext[j];
+		LOG("Checking dir %s ...", g.path);
+		if(IoDirExists(g.path)) {
+			g.initSf = _sfs[i].initSfCall;
+			for(unsigned k = 0; k < sizeof(g.voice_ext); k++) g.voice_ext[k] = _sfs[i].ext[k];
+			g.path[len_path] = '\0';
 			break;
 		}
 	}
-	if (!_game.ext[0]) {
+	if (!g.voice_ext[0]) {
 		LOG("Voice dir not found.");
 		return false;
 	}
-
-	LOG("Game info:\n"
-		"    game = %d\n"
-		"    umdId = %s\n"
-		"    path = %s\n"
-		"    ext = %s\n"
-		"    initSfCall = 0x%08X\n"
-		"    base = 0x%08X",
-		_game.game, _game.umdId,
-		_game.path, _game.ext,
-		(unsigned)_game.initSfCall,
-		_game.base
-	);
 
 	return true;
 };
@@ -130,12 +118,49 @@ int InitZaVoice(unsigned args, void *argp)
 	if (mid_boot < 0 || !initGame(mid_boot)) return 0;
 	LOG("Init Game infomation Finished.");
 
+	LoadConfig(&g.config, PATH_CONFIG);
+	LOG("Config info:\n"
+		"    Volume                   = %d\n"
+		"    AutoPlay                 = %d\n"
+		"    WaitTimePerChar          = %d\n"
+		"    WaitTimeDialog           = %d\n"
+		"    WaitTimeDialogWithVoice  = %d\n"
+		"    SkipVoice                = %d\n"
+		"    DisableDialogTextSE      = %d\n"
+		"    DisableDialogSwitchSE    = %d",
+		g.config.Volume,
+		g.config.AutoPlay,
+		g.config.WaitTimePerChar,
+		g.config.WaitTimeDialog,
+		g.config.WaitTimeDialogWithVoice,
+		g.config.SkipVoice,
+		g.config.DisableDialogTextSE,
+		g.config.DisableDialogSwitchSE
+	);
+
 	if (!DoHook()) return 0;
 	LOG("DoHook Finished.");
 
-	InitPlayerParam ipp = { &h_dududu_volume, &h_dlgse_volume };
-	if (!InitPlayer(&ipp)) return 0;
+	if (!InitPlayer(&g.autoPlay, &g.order)) return 0;
 	LOG("InitPlayer Finished.");
+
+	LOG("Game info:\n"
+		"    game = %d\n"
+		"    umdId = %s\n"
+		"    path = %s\n"
+		"    ext = %s\n"
+		"    initSfCall = 0x%08X\n",
+		g.game, g.umdId,
+		g.path, g.voice_ext,
+		(unsigned)g.initSf
+	);
+
+	LOG("\n    g = 0x%08X\n"
+		"    mod_base = 0x%08X\n"
+		"    off_pfm_cnt = 0x%08X\n"
+		"    pfm_cnt = 0x%08X\n",
+		(u32)&g, g.mod_base, g.off_pfm_cnt, (u32)g.pfm_cnt
+	);
 
 	LOG("All init Done.");
 	return 0;

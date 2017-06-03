@@ -7,6 +7,7 @@
 #include "player.h"
 #include "log.h"
 #include "mutex.h"
+#include "config.h"
 
 #include "sf_wav.h"
 #define TEST_WAV "ms0:/za_voice/test.wav"
@@ -131,6 +132,8 @@ void _call() {
 
 #define BUFF_SIZE 24000
 SampleType buff[24000][2];
+Config sconfig;
+Config* config = &sconfig;
 int main(void)
 {
 	pspDebugScreenInit();
@@ -139,6 +142,31 @@ int main(void)
 	pspDebugScreenPrintf("Start.\n");
 	LOG("Start.");
 	
+	LOG("Config test.");
+	LoadConfig(config, "ms0:/PSP/za_voice/config.ini");
+	LOG("Config info:\n"
+		"    Volume                   = %d\n"
+		"    AutoPlay                 = %d\n"
+		"    WaitTimePerChar          = %d\n"
+		"    WaitTimeDialog           = %d\n"
+		"    WaitTimeDialogWithVoice  = %d\n"
+		"    SkipVoice                = %d\n"
+		"    DisableDialogTextSE      = %d\n"
+		"    DisableDialogSwitchSE    = %d",
+		config->Volume,
+		config->AutoPlay,
+		config->WaitTimePerChar,
+		config->WaitTimeDialog,
+		config->WaitTimeDialogWithVoice,
+		config->SkipVoice,
+		config->DisableDialogTextSE,
+		config->DisableDialogSwitchSE
+	);
+	SaveConfig(config, "ms0:/PSP/za_voice/config_new.ini");
+	LOG("Config test end.");
+	sceKernelDelayThread(5 * 1000 * 1000);
+
+
 	LOG("Mutex test...");
 	mt = MutexCreate();
 	LOG("Mutex Creted.");

@@ -1,4 +1,4 @@
-#include "type.h"
+#include "basic_type.h"
 
 #include <pspctrl.h>
 #include <pspthreadman.h>

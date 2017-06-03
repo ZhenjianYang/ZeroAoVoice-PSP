@@ -1,6 +1,6 @@
 #pragma once
 
-#include "type.h"
+#include "basic_type.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,6 +34,12 @@ int IoFSeek(IoHandle ioh, long long off, int whence);
 long IoFTell(IoHandle ioh);
 
 int IoFClose(IoHandle ioh);
+
+int IoFReadStr(IoHandle ioh, char* buff, int max_ch, const char* endMarkList, int cnt);
+int IoFReadUInt(IoHandle ioh, unsigned int* out);
+
+int IoFWriteStr(IoHandle ioh, const char* str);
+int IoFWriteUInt(IoHandle ioh, unsigned int num);
 
 bool IoDirExists(const char* dir);
 

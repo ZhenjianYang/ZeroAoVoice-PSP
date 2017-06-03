@@ -1,6 +1,6 @@
 #pragma once
 
-#include "type.h"
+#include "basic_type.h"
 
 #ifdef __cplusplus
 extern "C" {

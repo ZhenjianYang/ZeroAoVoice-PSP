@@ -1,15 +1,17 @@
 #include "hook.h"
-#include "hook_asm.h"
-#include "player.h"
-#include "za_voice_i.h"
-#include "io.h"
+#include "global.h"
+#include "hook2.h"
 #include "log.h"
 
 #define CODE_NOP	0x00000000
 #define CODE_JAL	0x0C000000
 #define CODE_J		0x08000000
 #define CODE_JMsk	0x03FFFFFF
+#define CODE_BMsk	0x0000FFFF
 #define CODE_CntMsk	0x0000FFFF
+
+#define OFF_PFM_CNT_ZERO 0x30D8
+#define OFF_PFM_CNT_AO 0
 
 enum HookType {
 	HookType_FixOP_List = 1 << 30,
@@ -19,59 +21,79 @@ enum HookType {
 	HookType_J = 1 << 1,
 
 	HookType_ClearDelay = 1 << 10,
-	HookType_SaveOldJmpAddr = 1 << 11
+	HookType_SaveOldJmpAddr = 1 << 11,
+	HookType_SaveOldJmpB = 1 << 12
 };
 
-static const u32 HookAddrList_Zero[] = {
+static u32 HookAddrList_Zero[] = {
 	0x088F4C54, //voice instruction
 	0x088F652C, //dududu
 	0x088F6408, //dlgse
+	0x0880A010, //scode
+	0x088F5428, //count
+	0x089DD550, //ctrl
+	0x0883DAE0, //pfm_cnt
+	0x088F4FB4, //codeA
 };
 
-static const u32 HookAddrList_Ao[] = {
+static u32 HookAddrList_Ao[] = {
 	0x0,
 	0x0,
 	0x0,
+	0x0,
+	0x0,
+	0x0,
+	0x0,
+	0x0
 };
 
-static const u32* HookAddrList;
 static const u32 HookOperandList[] = {
 	(u32)&h_voice,
 	(u32)&h_dududu,
 	(u32)&h_dlgse,
+	(u32)&h_scode,
+	(u32)&h_count,
+	(u32)&h_ctrl,
+	(u32)&h_pfm_cnt,
+	(u32)&h_codeA,
 };
 static const u32 HookOperand2List[] = {
-	0,
-	0,
-	(u32)&h_sub_se,
+	0, //voice instruction
+	0, //dududu
+	(u32)&g.ha.addr_sub_se, //dlgse
+	0, //scode
+	(u32)&g.ha.addr_less, //count
+	0, //ctrl
+	0, //pfm_cnt
+	0, //codeA
 };
 static const u32 HookTyperList[] = {
-	HookType_JAL,
-	HookType_JAL,
-	HookType_JAL | HookType_SaveOldJmpAddr,
+	HookType_JAL, //voice instruction
+	HookType_JAL, //dududu
+	HookType_JAL | HookType_SaveOldJmpAddr,//dlgse
+	HookType_JAL | HookType_ClearDelay,//scode
+	HookType_JAL | HookType_SaveOldJmpB, //count
+	HookType_JAL,//ctrl
+	HookType_JAL,//pfm_cnt
+	HookType_JAL,//codeA
 };
-static u32 _AddrAdjust;
+
 #define HookCount (sizeof(HookTyperList) / sizeof(*HookTyperList))
-
 #define STD_BASE	0x08804000
-
-#define MAX_VOICEID_LEN	10
-#define VOLUME_MAX 0x8000
-#define VOICE_FILE_PREFIX "/v"
-static char _buff_voicefile[64];
-static int _len_prefix;
 
 //////////////////////////////////////////////////////////////////////////////
 
 bool DoHook() {
-	HookAddrList = g_game->game == Game_Zero ? HookAddrList_Zero : HookAddrList_Ao;
-	_AddrAdjust = g_game->base - STD_BASE;
+	u32 * hookAddrList = g.game == Game_Zero ? HookAddrList_Zero : HookAddrList_Ao;
+	u32 addrAdjust = g.mod_base - STD_BASE;
+	g.off_pfm_cnt = Game_Zero ? OFF_PFM_CNT_ZERO : OFF_PFM_CNT_AO;
+
 	for(unsigned i = 0; i < HookCount; i++) {
 		LOG("Hook addr = 0x%08X, type = 0x%08X, Operand = 0x%08X",
-				HookAddrList[i] + _AddrAdjust, HookTyperList[i], HookOperandList[i]);
-		if(!HookAddrList[i]) continue;
+				hookAddrList[i] + addrAdjust, HookTyperList[i], HookOperandList[i]);
+		if(!hookAddrList[i]) continue;
 
-		u32* pDst = (u32*)(HookAddrList[i] + _AddrAdjust);
+		u32* pDst = (u32*)(hookAddrList[i] + addrAdjust);
 
 		if(HookTyperList[i] & HookType_FixOP_List) {
 			unsigned count = CODE_CntMsk & HookTyperList[i];
@@ -87,6 +109,9 @@ bool DoHook() {
 
 			if(HookTyperList[i] & HookType_SaveOldJmpAddr) {
 				*(u32*)HookOperand2List[i] = (*pDst & CODE_JMsk) << 2;
+			} else if(HookTyperList[i] & HookType_SaveOldJmpB) {
+				u32 len = (u32)((s16)(*pDst & CODE_JMsk) * 4);
+				*(u32*)HookOperand2List[i] = (u32)pDst + len + 4;
 			}
 
 			*pDst = new_code;
@@ -97,47 +122,10 @@ bool DoHook() {
 		}
 	}
 
-	for(_len_prefix = 0; g_game->path[_len_prefix]; _len_prefix++) {
-		_buff_voicefile[_len_prefix] = g_game->path[_len_prefix];
-	}
-	for(int i = 0; g_game->ext[i]; i++, _len_prefix++) {
-		_buff_voicefile[_len_prefix] = g_game->ext[i];
-	}
-	for(unsigned i = 0; i < sizeof(VOICE_FILE_PREFIX); i++) {
-		_buff_voicefile[_len_prefix + i] = VOICE_FILE_PREFIX[i];
-	}
-	_len_prefix += sizeof(VOICE_FILE_PREFIX) - 1;
-
-	LOG("addr voice file: 0x%08X", (unsigned)_buff_voicefile);
-	LOG("len prefix: %d", _len_prefix);
+	InitHook2();
 
 	return true;
 }
 bool CleanHook() { return true; }
 
 
-////////////////////////////////////////////////////
-
-int h_dududu_volume = 0x64;
-int h_dlgse_volume = 0x64;
-unsigned h_sub_se;
-
-void H_stop_voice() {
-	StopSound();
-}
-
-void H_voice(const char* p) {
-	if(*p != 'v') return;
-
-	const char* q = p - 1;
-	while(q >= p - MAX_VOICEID_LEN - 1 && *q != '#') q--;
-	if(*q != '#' || p - q <= 1) return;
-
-	q++;
-	char* t = _buff_voicefile + _len_prefix;
-	while(q < p) *t++ = *q++;
-	*t++ = '.';
-	for(unsigned i = 0; i < sizeof(g_game->ext); i++) *t++ = g_game->ext[i];
-
-	PlaySound(_buff_voicefile, VOLUME_MAX, g_game->initSfCall);
-}

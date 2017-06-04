@@ -25,7 +25,6 @@ typedef struct Config {
 
 bool LoadConfig(struct Config* config, const char* cfg_file);
 bool SaveConfig(const struct Config* config, const char* cfg_file);
-bool TransConfig(struct Config* config_f, const struct Config* config, int fps);
 
 #ifdef __cplusplus
 }

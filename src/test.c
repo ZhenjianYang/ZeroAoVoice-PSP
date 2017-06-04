@@ -8,6 +8,7 @@
 #include "log.h"
 #include "mutex.h"
 #include "config.h"
+#include "global.h"
 
 #include "sf_wav.h"
 #define TEST_WAV "ms0:/za_voice/test.wav"
@@ -17,6 +18,8 @@
 
 #include "sf_at3.h"
 #define TEST_AT3 "ms0:/za_voice/test.at3"
+
+Global g;
 
 typedef struct Test {
 	InitSfCall initCall;
@@ -120,10 +123,14 @@ int AThread(SceSize args, void *argp) {
 }
 
 static unsigned count = 0;
+Play play;
 void _call() {
 	for(unsigned i = 0; i < Num_tests; i++) {
 		if(tests[count % Num_tests].initCall) {
-			PlaySound(tests[count % Num_tests].fileName, 0x8000, tests[count % Num_tests].initCall);
+			play.filename = tests[count % Num_tests].fileName;
+			play.volume = 100;
+			play.initSf = tests[count % Num_tests].initCall;
+			PlaySound(&play);
 			count++;
 			break;
 		}

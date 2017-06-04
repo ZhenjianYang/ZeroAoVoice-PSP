@@ -48,8 +48,6 @@ void H_voice(const char* p) {
 	PlaySound(&_play);
 }
 
-HookAddr ha;
-
 __asm__(
 	".global h_voice"									BREAK
 	"h_voice:"											BREAK

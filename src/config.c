@@ -50,6 +50,14 @@ static inline int _StrCmp(const char* s1, const char *s2) {
 #define SET_VALUE(CONFIG, NAME, BUFF_NAME, VALUE) \
 	if(!_StrCmp(STR_##NAME, BUFF_NAME)) CONFIG->NAME = VALUE;
 
+#define FIX_VALUE_MAX(CONFIG, NAME) \
+		if(CONFIG->NAME < 0) CONFIG->NAME = 0; \
+		else if(CONFIG->NAME > Max_##NAME) CONFIG->NAME = Max_##NAME;
+
+#define FIX_VALUE_BOOL(CONFIG, NAME) \
+		if(CONFIG->NAME) CONFIG->NAME = 1; \
+		else CONFIG->NAME = 0;
+
 bool LoadConfig(struct Config* config, const char* cfg_file) {
 	_LoadDefault(config);
 
@@ -83,6 +91,18 @@ bool LoadConfig(struct Config* config, const char* cfg_file) {
 	}
 
 	IoFClose(ioh);
+
+	FIX_VALUE_MAX(config, Volume);
+	FIX_VALUE_MAX(config, AutoPlay);
+	FIX_VALUE_MAX(config, WaitTimePerChar);
+	FIX_VALUE_MAX(config, WaitTimeDialog);
+	FIX_VALUE_MAX(config, WaitTimeDialogWithVoice);
+
+	FIX_VALUE_BOOL(config, SkipVoice);
+	FIX_VALUE_BOOL(config, DisableDialogTextSE);
+	FIX_VALUE_BOOL(config, DisableDialogSwitchSE);
+	FIX_VALUE_BOOL(config, DisableOriginalVoice);
+
 	return true;
 }
 

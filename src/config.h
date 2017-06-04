@@ -6,10 +6,15 @@
 extern "C" {
 #endif // __cplusplus
 
-#define Max_Volume 100
 
 #define AutoPlay_VoiceOnly			1
 #define AutoPlay_All				2
+
+#define Max_Volume					100
+#define Max_AutoPlay				AutoPlay_All
+#define Max_WaitTimePerChar			1000
+#define Max_WaitTimeDialog			10000
+#define Max_WaitTimeDialogWithVoice	10000
 
 typedef struct Config {
 	int Volume;

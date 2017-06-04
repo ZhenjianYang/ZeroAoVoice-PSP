@@ -137,6 +137,7 @@ int InitZaVoice(unsigned args, void *argp)
 		g.config.DisableDialogTextSE,
 		g.config.DisableDialogSwitchSE
 	);
+	SaveConfig(&g.config, PATH_CONFIG);
 
 	if (!DoHook()) return 0;
 	LOG("DoHook Finished.");
@@ -149,7 +150,7 @@ int InitZaVoice(unsigned args, void *argp)
 		"    umdId = %s\n"
 		"    path = %s\n"
 		"    ext = %s\n"
-		"    initSfCall = 0x%08X\n",
+		"    initSfCall = 0x%08X",
 		g.game, g.umdId,
 		g.path, g.voice_ext,
 		(unsigned)g.initSf
@@ -158,7 +159,7 @@ int InitZaVoice(unsigned args, void *argp)
 	LOG("\n    g = 0x%08X\n"
 		"    mod_base = 0x%08X\n"
 		"    off_pfm_cnt = 0x%08X\n"
-		"    pfm_cnt = 0x%08X\n",
+		"    pfm_cnt = 0x%08X",
 		(u32)&g, g.mod_base, g.off_pfm_cnt, (u32)g.pfm_cnt
 	);
 

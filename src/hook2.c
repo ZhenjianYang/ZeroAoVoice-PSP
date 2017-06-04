@@ -252,8 +252,10 @@ __asm__(
 	"    bne	 $t0, $t1, ctrl_ret" 					BREAK
 
 	"set_autoplay:" 									BREAK
+	"    lw      $a2, 4($sp)" 							BREAK
 	"    ori     $a2, $a2, " S(CTRL_OK) 				BREAK
 	"    sw      $a2, 4($sp)" 							BREAK
+	"    move    $a0, $a2" 								BREAK
 
 	"ctrl_ret:"
 	"    jr   $ra"										BREAK

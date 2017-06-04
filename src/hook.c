@@ -11,7 +11,7 @@
 #define CODE_CntMsk	0x0000FFFF
 
 #define OFF_PFM_CNT_ZERO 0x30D8
-#define OFF_PFM_CNT_AO 0
+#define OFF_PFM_CNT_AO 0x3138
 
 enum HookType {
 	HookType_FixOP_List = 1 << 30,
@@ -34,18 +34,21 @@ static u32 HookAddrList_Zero[] = {
 	0x089DD550, //ctrl
 	0x0883DAE0, //pfm_cnt
 	0x088F4FB4, //codeA
+	0, //dis_orivoice
 };
 
 static u32 HookAddrList_Ao[] = {
-	0x0,
-	0x0,
-	0x0,
-	0x0,
-	0x0,
-	0x0,
-	0x0,
-	0x0
+	0x088FC7DC, //voice instruction
+	0x088FDA4C, //dududu
+	0x088FD868, //dlgse
+	0x0880A09C, //scode
+	0x088FC300, //count
+	0x08A02C68, //ctrl
+	0x0883F14C, //pfm_cnt
+	0x088FC640, //codeA
+	0x088FC3E8, //dis_orivoice
 };
+#define IDX_HOOKADDR_DIS_ORIVOICE 8
 
 static const u32 HookOperandList[] = {
 	(u32)&h_voice,
@@ -56,6 +59,7 @@ static const u32 HookOperandList[] = {
 	(u32)&h_ctrl,
 	(u32)&h_pfm_cnt,
 	(u32)&h_codeA,
+	CODE_NOP,//dis_orivoice
 };
 static const u32 HookOperand2List[] = {
 	0, //voice instruction
@@ -66,6 +70,7 @@ static const u32 HookOperand2List[] = {
 	0, //ctrl
 	0, //pfm_cnt
 	0, //codeA
+	0,//dis_orivoice
 };
 static const u32 HookTyperList[] = {
 	HookType_JAL, //voice instruction
@@ -76,6 +81,7 @@ static const u32 HookTyperList[] = {
 	HookType_JAL,//ctrl
 	HookType_JAL,//pfm_cnt
 	HookType_JAL,//codeA
+	HookType_FixOP//dis_orivoice
 };
 
 #define HookCount (sizeof(HookTyperList) / sizeof(*HookTyperList))
@@ -86,12 +92,17 @@ static const u32 HookTyperList[] = {
 bool DoHook() {
 	u32 * hookAddrList = g.game == Game_Zero ? HookAddrList_Zero : HookAddrList_Ao;
 	u32 addrAdjust = g.mod_base - STD_BASE;
-	g.off_pfm_cnt = Game_Zero ? OFF_PFM_CNT_ZERO : OFF_PFM_CNT_AO;
+	g.off_pfm_cnt = g.game == Game_Zero ? OFF_PFM_CNT_ZERO : OFF_PFM_CNT_AO;
+
+	if(!g.config.DisableOriginalVoice) {
+		HookAddrList_Ao[IDX_HOOKADDR_DIS_ORIVOICE] = 0;
+	}
 
 	for(unsigned i = 0; i < HookCount; i++) {
-		LOG("Hook addr = 0x%08X, type = 0x%08X, Operand = 0x%08X",
-				hookAddrList[i] + addrAdjust, HookTyperList[i], HookOperandList[i]);
 		if(!hookAddrList[i]) continue;
+
+		LOG("Hook addr = 0x%08X, type = 0x%08X, Operand = 0x%08X",
+					hookAddrList[i] + addrAdjust, HookTyperList[i], HookOperandList[i]);
 
 		u32* pDst = (u32*)(hookAddrList[i] + addrAdjust);
 

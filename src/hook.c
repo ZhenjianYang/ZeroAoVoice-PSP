@@ -30,7 +30,7 @@ static u32 HookAddrList_Zero[] = {
 	0x088F652C, //dududu
 	0x088F6408, //dlgse
 	0x0880A010, //scode
-	0x088F5428, //count
+	0x088F4B3C, //count
 	0x089DD550, //ctrl
 	0x0883DAE0, //pfm_cnt
 	0x088F4FB4, //codeA
@@ -72,7 +72,7 @@ static const u32 HookTyperList[] = {
 	HookType_JAL, //dududu
 	HookType_JAL | HookType_SaveOldJmpAddr,//dlgse
 	HookType_JAL | HookType_ClearDelay,//scode
-	HookType_JAL | HookType_SaveOldJmpB, //count
+	HookType_JAL | HookType_ClearDelay | HookType_SaveOldJmpB, //count
 	HookType_JAL,//ctrl
 	HookType_JAL,//pfm_cnt
 	HookType_JAL,//codeA

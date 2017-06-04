@@ -80,7 +80,7 @@ static int soundThread(SceSize args, void *argp) {
 				if(_pos == 0) EventSet(_evh_read, ReadSecondHalfRequest);
 				else if(_pos == SMPNUM_HALFBUFF) EventSet(_evh_read, ReadFirstHalfRequest);
 
-				sceAudioSRCOutputBlocking(_volume, _soundbuff + _pos);
+				sceAudioSRCOutputBlocking(_volume * PSP_AUDIO_VOLUME_MAX / Max_Volume, _soundbuff + _pos);
 
 				_pos += SAMNUM_ONETIME;
 				_pos %= SMPNUM_BUFF;

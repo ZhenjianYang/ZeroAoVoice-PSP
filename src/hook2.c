@@ -132,7 +132,7 @@ __asm__(
 	"    lw      $v0, 0($sp)"									BREAK
 	"    sll     $v1, 3"										BREAK
 	"    addu    $v1, $v1, $v0"									BREAK
-	"    addiu   $sp, $sp, 4"									BREAK
+	"    addiu   $sp, $sp, 8"									BREAK
 	"    jr      $ra"											BREAK
 
 	"scode_clear:"												BREAK
@@ -160,37 +160,13 @@ __asm__  (
 	"    lui     $t4, %hi(g)"									BREAK
 	"    addiu   $t4, %lo(g)"									BREAK
 
-	"    bne     $v0, $zero, code_less20"						BREAK
+	"    beq     $v0, $zero, code_ge20"							BREAK
 
 	"    lw      $v0, "  S(OFF_ap_scod)  "($t4)"				BREAK
-	"    beq     $v0, $zero, count_ret_ge20"					BREAK
+	"    beq     $v0, $zero, count_ret"							BREAK
 
-	"    li      $v0, '#'"                           		    BREAK
-	"    beq     $s0, $v0, count_ret_ge20"						BREAK
-
-	"    lw      $v0, "  S(OFF_ap_tcnt)  "($t4)"				BREAK
-	"    beq     $v0, $zero, code_notfirst"                     BREAK
-
-	"    lw      $t0, "  S(OFF_pfm_cnt)  "($t4)"				BREAK
-	"    lw      $t0, 0($t0)"									BREAK
-	"    sw      $t0, "  S(OFF_ap_fms)  "($t4)"					BREAK
-
-	"code_notfirst:"											BREAK
-	"    addiu   $v0, $v0, 1"					       			BREAK
-	"    sw      $v0, "  S(OFF_ap_tcnt)  "($t4)"				BREAK
-
-	"count_ret_ge20:"											BREAK
-	"    li      $v0, 0"						        		BREAK
-
-	"count_ret:"												BREAK
-	"    lw      $t0, 4($sp)"					        		BREAK
-	"    lw      $t4, 0($sp)"					        		BREAK
-	"    addiu   $sp, $sp, 8"					       			BREAK
-	"    jr      $ra"											BREAK
-
-	"code_less20:"												BREAK
 	"    li      $v0, 2"						        		BREAK
-	"    bne     $v0, $s0, count_ret_less20"	        		BREAK
+	"    bne     $v0, $v1, count_ret"	     			   		BREAK
 
 	"    li      $v0, 1"										BREAK
 	"    sw      $v0, "  S(OFF_ap_tend)  "($t4)"				BREAK
@@ -211,8 +187,32 @@ __asm__  (
 	"    addu    $v0, $v0, $t0"									BREAK
 	"    sw      $v0, "  S(OFF_ap_fma)  "($t4)"					BREAK
 
-	"count_ret_less20:"											BREAK
-	"    li      $v0, 1"										BREAK
+	"count_ret:"												BREAK
+	"    lw      $t0, 4($sp)"					        		BREAK
+	"    lw      $t4, 0($sp)"					        		BREAK
+	"    li      $v0, 0x23"						        		BREAK
+	"    addiu   $sp, $sp, 8"					       			BREAK
+	"    jr      $ra"											BREAK
+
+	"code_ge20:"												BREAK
+	"    lw      $v0, "  S(OFF_ap_scod)  "($t4)"				BREAK
+	"    beq     $v0, $zero, count_ret_ge20"					BREAK
+
+	"    li      $v0, '#'"                           		    BREAK
+	"    beq     $v1, $v0, count_ret_ge20"						BREAK
+
+	"    lw      $v0, "  S(OFF_ap_tcnt)  "($t4)"				BREAK
+	"    bne     $v0, $zero, code_notfirst"                     BREAK
+
+	"    lw      $t0, "  S(OFF_pfm_cnt)  "($t4)"				BREAK
+	"    lw      $t0, 0($t0)"									BREAK
+	"    sw      $t0, "  S(OFF_ap_fms)  "($t4)"					BREAK
+
+	"code_notfirst:"											BREAK
+	"    addiu   $v0, $v0, 1"					       			BREAK
+	"    sw      $v0, "  S(OFF_ap_tcnt)  "($t4)"				BREAK
+
+	"count_ret_ge20:"											BREAK
 	"    lw      $ra, "  S(OFF_sub_less)  "($t4)"				BREAK
 	"    j       count_ret"										BREAK
 );

@@ -62,7 +62,7 @@ static const u32 HookOperand2List[] = {
 	0, //dududu
 	(u32)&g.ha.addr_sub_se, //dlgse
 	0, //scode
-	(u32)&g.ha.addr_less, //count
+	(u32)&g.ha.addr_ge, //count
 	0, //ctrl
 	0, //pfm_cnt
 	0, //codeA

@@ -97,7 +97,7 @@ static bool initGame(SceUID mid_boot) {
 		for(unsigned j = 0; j < sizeof(g.voice_ext); j++) g.path[len_path + j] = _sfs[i].ext[j];
 		LOG("Checking dir %s ...", g.path);
 		if(IoDirExists(g.path)) {
-			g.initSf = _sfs[i].initSfCall;
+			g.initSf = (void*)_sfs[i].initSfCall;
 			for(unsigned k = 0; k < sizeof(g.voice_ext); k++) g.voice_ext[k] = _sfs[i].ext[k];
 			g.path[len_path] = '\0';
 			break;
@@ -141,7 +141,7 @@ int InitZaVoice(unsigned args, void *argp)
 	if (!DoHook()) return 0;
 	LOG("DoHook Finished.");
 
-	if (!InitPlayer(&g.autoPlay, &g.order)) return 0;
+	if (!InitPlayer()) return 0;
 	LOG("InitPlayer Finished.");
 
 	LOG("Game info:\n"

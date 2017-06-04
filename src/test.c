@@ -129,7 +129,7 @@ void _call() {
 		if(tests[count % Num_tests].initCall) {
 			play.filename = tests[count % Num_tests].fileName;
 			play.volume = 100;
-			play.initSf = tests[count % Num_tests].initCall;
+			play.initSf = (void*)tests[count % Num_tests].initCall;
 			PlaySound(&play);
 			count++;
 			break;
@@ -261,7 +261,7 @@ int main(void)
 	} else {
 		LOG("Load libatrac3plus failed.");
 	}
-	InitPlayer(NULL);
+	InitPlayer();
 	LOG("InitSound Finished.");
 
 	while(1) {

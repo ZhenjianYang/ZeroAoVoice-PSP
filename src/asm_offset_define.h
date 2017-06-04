@@ -21,6 +21,6 @@
 #define OFF_ap_fmva 100
 #define OFF_ha 104
 #define OFF_sub_se 104
-#define OFF_sub_less 108
+#define OFF_sub_ge 108
 #define OFF_pfm_cnt 64
 #define OFF_off_pfm_cnt 60

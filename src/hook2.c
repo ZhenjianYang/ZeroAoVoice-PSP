@@ -213,7 +213,7 @@ __asm__  (
 	"    sw      $v0, "  S(OFF_ap_tcnt)  "($t4)"				BREAK
 
 	"count_ret_ge20:"											BREAK
-	"    lw      $ra, "  S(OFF_sub_less)  "($t4)"				BREAK
+	"    lw      $ra, "  S(OFF_sub_ge)  "($t4)"					BREAK
 	"    j       count_ret"										BREAK
 );
 

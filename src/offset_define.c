@@ -29,7 +29,7 @@ DEFINE_OFFSET_WName(ap_fmva, Global, autoPlay.fm_voice_auto);
 
 DEFINE_OFFSET(Global, ha);
 DEFINE_OFFSET_WName(sub_se, Global, ha.addr_sub_se);
-DEFINE_OFFSET_WName(sub_less, Global, ha.addr_less);
+DEFINE_OFFSET_WName(sub_ge, Global, ha.addr_ge);
 
 DEFINE_OFFSET(Global, pfm_cnt);
 DEFINE_OFFSET(Global, off_pfm_cnt);

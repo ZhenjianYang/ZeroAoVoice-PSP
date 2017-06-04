@@ -2,6 +2,7 @@
 #include "asm_offset_define.h"
 #include "global.h"
 #include "player.h"
+#include "draw.h"
 
 #define BREAK "\n"
 
@@ -47,6 +48,28 @@ void H_voice(const char* p) {
 
 	PlaySound(&_play);
 }
+
+void H_test() {
+	if(need_draw) Draw();
+}
+
+__asm__(
+	".global h_test"									BREAK
+	"h_test:"											BREAK
+	"    addiu   $sp, $sp, -8"					       	BREAK
+	"    sw      $ra, 0($sp)"					       	BREAK
+	"    sw      $a0, 4($sp)"					       	BREAK
+
+	"    jal    H_test"									BREAK
+
+	"    lui     $a1, %hi(g)"							BREAK
+	"    addiu   $a1, %lo(g)"							BREAK
+	"    lw      $a1,"  S(OFF_sub_test)  "($a1)"      	BREAK
+	"    lw      $ra, 0($sp)"					       	BREAK
+	"    lw      $a0, 4($sp)"					       	BREAK
+	"    addiu   $sp, $sp, 8"					       	BREAK
+	"    jr      $a1"					   		    	BREAK
+);
 
 __asm__(
 	".global h_voice"									BREAK

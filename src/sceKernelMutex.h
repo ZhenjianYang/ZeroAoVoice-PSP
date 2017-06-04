@@ -1,6 +1,6 @@
 
-#ifndef __THREADMAN_MUTEX_H__
-#define __THREADMAN_MUTEX_H__
+#ifndef __SCE_KERNEL_MUTEX_H__
+#define __SCE_KERNEL_MUTEX_H__
 
 #include <pspkerneltypes.h>
 

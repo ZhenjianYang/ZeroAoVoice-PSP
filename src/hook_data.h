@@ -32,6 +32,7 @@ typedef struct Order {
 typedef struct HookAddr {
 	unsigned addr_sub_se;
 	unsigned addr_ge;
+	unsigned addr_test;
 } HookAddr;
 
 

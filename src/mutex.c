@@ -1,6 +1,6 @@
 #include "mutex.h"
 
-#include <pspthreadman_mutex.h>
+#include <sceKernelMutex.h>
 
 MutexHandle MutexCreate() {
 	SceUID mid = sceKernelCreateMutex("Mutex", 0, 0, NULL);

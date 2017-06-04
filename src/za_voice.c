@@ -11,6 +11,7 @@
 #include "hook.h"
 #include "config.h"
 #include "global.h"
+#include "draw.h"
 #include "log.h"
 
 Global g;
@@ -164,6 +165,13 @@ int InitZaVoice(unsigned args, void *argp)
 	);
 
 	LOG("All init Done.");
+
+	Info info = {
+			InfoType_Volume,
+			0,
+			"TestTestTest"
+	};
+	AddInfo(&info);
 	return 0;
 }
 

@@ -31,6 +31,10 @@ FINAL_TARGET = $(DIR_BIN)/$(TARGET).$(ATTR)
 FINAL_ELF = $(DIR_TMP)/$(TARGET).elf
 FINAL_OBJS = $(addprefix $(DIR_TMP)/, $(OBJS))
 
+ifneq ($(RCS),)
+FINAL_OBJS += $(DIR_TMP)/$(patsubst %.dat,%.o,$(RCS))
+endif
+
 ifdef PRX_EXPORTS
 EXPORT_OBJ  += $(DIR_TMP)/$(patsubst %.exp,%.o,$(PRX_EXPORTS))
 EXTRA_CLEAN += $(EXPORT_OBJ)
@@ -41,28 +45,9 @@ endif
 CC       = psp-gcc
 CXX      = psp-g++
 AS       = psp-gcc
-LD       = psp-gcc
+LD       = psp-ld
 FIXUP    = psp-fixup-imports
 MD       = mkdir
-
-# ifneq ($(NO_AUTO_STDCVER),0)
-
-# MAIN_VER = $(shell $(CC) -dumpversion | cut -f1 -d.)
-# MINOR_VER = $(shell $(CC) -dumpversion | cut -f2 -d.)
-# STDCFLAG = -std=c99
-
-# ifeq ($(shell expr $(MAIN_VER) \>= 4), 1)
-	# ifeq ($(shell expr $(MAIN_VER) \>= 5 \| $(MINOR_VER) \>= 7), 1)
-		# STDCFLAG = -std=c11
-	# else
-		# ifeq ($(shell expr $(MINOR_VER) \>= 6), 1)
-			# STDCFLAG = -std=c1x
-		# endif
-	# endif
-# endif
-
-# CFLAGS += $(STDCFLAG)
-# endif
 
 # Add in PSPSDK includes and libraries.
 INCDIR   := $(INCDIR) $(DIR_SRC) $(PSPSDK)/include
@@ -144,6 +129,9 @@ $(DIR_TMP)/%.o: $(DIR_SRC)/%.cpp
 
 $(DIR_TMP)/%.o: $(DIR_SRC)/%.cc
 	$(CXX) -c $< -o $@ $(INCDIR_FLAGS) $(CXXFLAGS)
+
+$(DIR_TMP)/%.o: $(DIR_SRC)/%.dat
+	$(LD) -r -b binary -o $@ $^
 
 clean:
 	-rm -f $(FINAL_TARGET) $(FINAL_ELF) $(FINAL_OBJS) $(EXTRA_CLEAN)

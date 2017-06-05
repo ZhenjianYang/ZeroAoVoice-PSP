@@ -1,4 +1,5 @@
 #include "draw.h"
+#include "font.h"
 
 #include "basic_type.h"
 #include "sceDmac.h"
@@ -9,13 +10,12 @@
 #include <pspge.h>
 
 #define CH_HEIGTH 16
-#define CH_WIDTH 8
-
-#define MAX_CH_ONE_INFO 16
-#define INFO_WIDTH 128
+#define MARGIN 1
+#define MAX_INFO_WIDTH 256
 
 #define MAX_UINT 0xFFFFFFFF
 #define PSP_VRAM_WIDTH 512
+#define PSP_VRAM_HEIGHT 272
 #define VRAM 0x44000000
 
 typedef u16 BitType;
@@ -24,72 +24,88 @@ typedef u16 BitType;
 
 typedef struct DrawInfo {
 	unsigned dead_time;
-	BitType data[CH_HEIGTH][INFO_WIDTH];
+	unsigned width;
+	BitType data[CH_HEIGTH][MAX_INFO_WIDTH];
 } DrawInfo;
 
-static DrawInfo _dis[InfoType_TotalCount];
-#define CNT_DI (sizeof(_dis) / sizeof(*_dis))
+static DrawInfo _draw;
 
 int need_draw = 0;
 
-#include "font.c"
+typedef u16 OffType;
+static const u8* fnt_data;
+static const OffType *off_list;
+static int fnt_cnt;
 
+bool InitDraw() {
+	fnt_data = (const u8*)&font_dat_start;
+	off_list = (const OffType*)fnt_data;
+	fnt_cnt = *off_list / sizeof(OffType);
 
-typedef u8 (*PCHFONT)[CH_HEIGTH][CH_WIDTH];
-static PCHFONT fonts = (PCHFONT)fonts_raw;
+	LOG("Draw init: \n"
+		"    off_list = 0x%08X\n"
+		"    fnt_cnt = %d\n"
+		"    fnt_data = 0x%08X",
+		(unsigned)off_list, fnt_cnt, (unsigned)fnt_data);
 
+	return true;
+}
 
 int Draw() {
 	if(!g.pfm_cnt) return 0;
-
 	unsigned cur_time = *g.pfm_cnt;
 
-	int cnt = 0;
+	if(_draw.dead_time < cur_time) return need_draw = 0;
+
 	BitType* p = (BitType*)VRAM;
-	for(unsigned i = 0; i < CNT_DI; i++) {
-		if(_dis[i].dead_time > cur_time) {
-			cnt++;
-			for(int j = 0;j < CH_HEIGTH; j++) {
-				sceDmacMemcpy(p, _dis[i].data[j], sizeof(_dis[i].data[j]));
-				p += PSP_VRAM_WIDTH;
-			}
-		}
+	BitType* q = p +  PSP_VRAM_WIDTH * PSP_VRAM_HEIGHT;
+
+	for(int j = 0;j < CH_HEIGTH; j++) {
+		sceDmacMemcpy(p, _draw.data[j], _draw.width * sizeof(**_draw.data));
+		sceDmacMemcpy(q, _draw.data[j], _draw.width * sizeof(**_draw.data));
+		p += PSP_VRAM_WIDTH;
+		q += PSP_VRAM_WIDTH;
 	}
-	return need_draw = cnt;
+	return need_draw = 1;
 }
 
 bool AddInfo(const Info *info) {
 	LOG("Add info.\n"
-		"    type = %d\n"
 		"    time = %d\n"
 		"    text = %s",
-		info->type, info->time, info->text);
-	if(!info || info->type >= CNT_DI || info->type < 0) return false;
+		info->time, info->text);
+	if(!info) return false;
 
 	unsigned cur_time = g.pfm_cnt ? *g.pfm_cnt : 0;
-	DrawInfo* di = _dis + info->type;
-	di->dead_time = info->time == INFOTIME_INFINITY ? MAX_UINT : cur_time + info->time;
+	_draw.dead_time = info->time == INFOTIME_INFINITY ? MAX_UINT : cur_time + info->time;
 
 	LOG("Modify DrawInfo : \n"
-		"    di = 0x%08X\n"
+		"    draw = 0x%08X\n"
 		"    dead_time = %d\n"
 		"    data = 0x%08X",
-		(u32)di, di->dead_time, (u32)di->data);
+		(u32)&_draw, _draw.dead_time, (u32)_draw.data);
 
-	for(unsigned i = 0; i < sizeof(di->data) / sizeof(BitType); i ++) {
-		*((BitType*)di->data + i) = BACK_COLOR;
-	}
+	_draw.width = 0;
+	for(int i = 0; info->text[i] > 0; i++) {
+		if(info->text[i] >= fnt_cnt - 1) continue;
 
-	int x = 0;
-	for(int i = 0; i < MAX_CH_ONE_INFO; i++, x += CH_WIDTH) {
-		if(info->text[i] <= 0) break;
+		int off_ch = off_list[(int)info->text[i]];
+		int off_ch_next = off_list[(int)info->text[i] + 1];
+		const u8* pch = fnt_data + off_ch;
+		int width = (off_ch_next - off_ch) / CH_HEIGTH;
+
+		if(_draw.width + width + MARGIN > MAX_INFO_WIDTH) break;
+
+		_draw.width += MARGIN;
 		for(int y = 0; y < CH_HEIGTH; y++) {
-			for(int xx = 0; xx < CH_WIDTH; xx++) {
-				u8 bit = fonts[(int)info->text[i]][y][xx];
-				unsigned bit5 = (bit * 0x1F / 0xFF) & 0x1F;
-				di->data[y][x + xx] = (BitType)(bit5 | (bit5 << 5) | (bit << 10) | (bit5 ? 1 << 15 : 0));
+			for(int xx = 0; xx < width; xx++) {
+				u8 bit = *pch++;
+				unsigned bit5 = (unsigned)bit >> 3;
+				unsigned bit1 = (unsigned)bit >> 7;
+				_draw.data[y][_draw.width + xx] = (BitType)((bit5) | (bit5 << 5) | (bit5 << 10) | (bit1 << 15));
 			}
 		}
+		_draw.width += width;
 	}
 
 	need_draw = 1;
@@ -97,8 +113,8 @@ bool AddInfo(const Info *info) {
 }
 
 bool RemoveInfo(int type) {
-	if(type >= CNT_DI || type < 0) return false;
-	 _dis[type].dead_time = 0;
+	_draw.dead_time = 0;
+	need_draw = 0;
 
 	return true;
 }

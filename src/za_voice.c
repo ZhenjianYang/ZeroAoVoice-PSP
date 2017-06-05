@@ -164,12 +164,12 @@ int InitZaVoice(unsigned args, void *argp)
 		(u32)&g, g.mod_base, g.off_pfm_cnt, (u32)g.pfm_cnt
 	);
 
+	InitDraw();
 	LOG("All init Done.");
 
 	Info info = {
-			InfoType_Volume,
 			0,
-			"TestTestTest"
+			"AWMghyYOPXZj"
 	};
 	AddInfo(&info);
 	return 0;

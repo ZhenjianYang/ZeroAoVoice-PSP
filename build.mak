@@ -34,10 +34,14 @@ ifndef ($(EXTRA_TARGETS),)
 EXTRA_TARGETS := $(addprefix $(DIR_BIN)/, $(EXTRA_TARGETS))
 endif
 
+ifneq ($(RCS),)
+FINAL_OBJS += $(DIR_TMP)/$(patsubst %.dat,%.o,$(RCS))
+endif
+
 CC       = psp-gcc
 CXX      = psp-g++
 AS       = psp-gcc
-LD       = psp-gcc
+LD       = psp-ld
 AR       = psp-ar
 RANLIB   = psp-ranlib
 STRIP    = psp-strip
@@ -47,25 +51,6 @@ FIXUP    = psp-fixup-imports
 ENC		 = PrxEncrypter
 MD       = mkdir
 CP		 = cp
-
-# ifneq ($(NO_AUTO_STDCVER),0)
-
-# MAIN_VER = $(shell $(CC) -dumpversion | cut -f1 -d.)
-# MINOR_VER = $(shell $(CC) -dumpversion | cut -f2 -d.)
-# STDCFLAG = -std=c99
-
-# ifeq ($(shell expr $(MAIN_VER) \>= 4), 1)
-	# ifeq ($(shell expr $(MAIN_VER) \>= 5 \| $(MINOR_VER) \>= 7), 1)
-		# STDCFLAG = -std=c11
-	# else
-		# ifeq ($(shell expr $(MINOR_VER) \>= 6), 1)
-			# STDCFLAG = -std=c1x
-		# endif
-	# endif
-# endif
-
-# CFLAGS += $(STDCFLAG)
-# endif
 
 # Add in PSPSDK includes and libraries.
 INCDIR   := $(INCDIR) $(DIR_SRC) $(PSPSDK)/include
@@ -242,6 +227,9 @@ $(DIR_TMP)/%.o: $(DIR_SRC)/%.cpp
 
 $(DIR_TMP)/%.o: $(DIR_SRC)/%.cc
 	$(CXX) -c $< -o $@ $(INCDIR_FLAGS) $(CXXFLAGS)
+
+$(DIR_TMP)/%.o: $(DIR_SRC)/%.dat
+	$(LD) -r -b binary -o $@ $^
 
 clean: 
 	-rm -f $(FINAL_TARGET) $(EXTRA_CLEAN) $(FINAL_ELF) $(FINAL_OBJS) $(DIR_BIN)/$(PSP_EBOOT_SFO) $(DIR_BIN)/$(PSP_EBOOT) $(EXTRA_TARGETS)

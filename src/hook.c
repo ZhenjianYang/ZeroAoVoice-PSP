@@ -35,7 +35,7 @@ static u32 HookAddrList_Zero[] = {
 	0x0883DAE0, //pfm_cnt
 	0x088F4FB4, //codeA
 	0, //dis_orivoice
-	0x089E4118
+	0x08A1D58C
 };
 
 static u32 HookAddrList_Ao[] = {

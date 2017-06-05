@@ -8,26 +8,19 @@ extern "C" {
 
 extern int need_draw;
 
-enum InfoType {
-	InfoType_Volume = 0,
-	InfoType_AutoPlay,
-
-	InfoType_TotalCount
-};
-
 #define INFOTIME_INFINITY 0
 
 typedef struct Info {
-	int type;
 	unsigned time;
-
 	const char* text;
 } Info;
+
+bool InitDraw();
 
 int Draw();
 
 bool AddInfo(const Info *info);
-bool RemoveInfo(int type);
+bool RemoveInfo();
 
 #ifdef __cplusplus
 }

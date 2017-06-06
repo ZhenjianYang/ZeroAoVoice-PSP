@@ -16,6 +16,7 @@ constexpr int CH_CNT = 128;
 
 int main(int argc, char *argv[]) {
 	int base_line = 3;
+	int bold = 0;
 
 	int arg_idx = 0;
 	int arg_tmp;
@@ -31,6 +32,15 @@ int main(int argc, char *argv[]) {
 					cout << "bad parameter, ignore: " << argv[i] << endl;
 				} else {
 					base_line = arg_tmp;
+				}
+				break;
+			case 'b':
+				arg_tmp = std::strtol(argv[i] + 2, &arg_pend, 10);
+				if (arg_pend == argv[i] + 2 || *arg_pend || arg_tmp < 0) {
+					cout << "bad parameter, ignore: " << argv[i] << endl;
+				}
+				else {
+					bold = arg_tmp;
 				}
 				break;
 			default:
@@ -53,7 +63,10 @@ int main(int argc, char *argv[]) {
 				"\t" "MakeFont [options] ttf_file" "\n"
 				"\t" "  options :"  "\n"
 				"\t" "      -hY : set vertical position to Y, default is 3" "\n"
-				"\t" "            (bigger for higher, could be negative.)"
+				"\t" "            (bigger for higher, could be negative.)\n"
+				"\t" "      -bB : set bold value to B. Its unit is 1/64 pixel." "\n"
+				"\t" "            Default is 0.\n"
+				"\t" "e.g. MakeFont -h4 -b32 test.ttf\n"
 			<< endl;
 		return 0;
 	}
@@ -88,6 +101,10 @@ int main(int argc, char *argv[]) {
 		FT_UInt glyph_index = FT_Get_Char_Index(face, asc);
 		if (FT_Load_Glyph(face, glyph_index, 0)) {
 			continue;
+		}
+
+		if (bold) {
+			FT_Outline_Embolden(&face->glyph->outline, (FT_Pos)(bold));
 		}
 
 		if (face->glyph->format != FT_GLYPH_FORMAT_BITMAP) {

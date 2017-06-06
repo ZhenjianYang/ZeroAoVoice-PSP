@@ -6,6 +6,7 @@
 extern "C" {
 #endif // __cplusplus
 
+#define PATH_CONFIG "ms0:/PSP/za_voice/za_voice.ini"
 
 #define AutoPlay_VoiceOnly			1
 #define AutoPlay_All				2

@@ -3,6 +3,7 @@
 #include "global.h"
 #include "player.h"
 #include "draw.h"
+#include "ctrl.h"
 
 #define BREAK "\n"
 
@@ -46,25 +47,62 @@ void H_voice(const char* p) {
 	*t++ = '.';
 	for(unsigned i = 0; i < sizeof(g.voice_ext); i++) *t++ = g.voice_ext[i];
 
+	_play.volume = g.config.Volume;
 	PlaySound(&_play);
 }
 
-void H_test() {
+static unsigned button_old = 0;
+void H_ctrl(unsigned* buttons) {
+	if(*buttons != button_old && g.order.isDlg) {
+		//check input
+		if((*buttons & KEY_AUTO_PLAY) == KEY_AUTO_PLAY) {
+			SwitchAutoPlay();
+		}
+		int volume_add = 0;
+		if((*buttons & KEY_VOLUME_UP) == KEY_VOLUME_UP) volume_add = VOLUME_STEP;
+		else if((*buttons & KEY_VOLUME_DOWN) == KEY_VOLUME_DOWN) volume_add = -VOLUME_STEP;
+
+		if(volume_add) {
+			if((*buttons & KEY_VOLUME_BIG_STEP) == KEY_VOLUME_BIG_STEP) volume_add *= VOLUME_STEP_BIG;
+			AddVolume(volume_add);
+		}
+	}
+	button_old = *buttons;
+
+	if(!g.autoPlay.text_end) return;
+
+	//check if auto play
+	unsigned fm_now = *g.pfm_cnt;
+	if(fm_now < g.autoPlay.fm_voice_auto) return;
+	if(fm_now < g.autoPlay.fm_auto) return;
+
+	unsigned fm_voice_start = g.autoPlay.fm_voice_start;
+	g.autoPlay.text_cnt = g.autoPlay.text_end
+			= g.autoPlay.fm_start = g.autoPlay.fm_voice_start
+			= 0;
+
+	if((fm_voice_start && g.config.AutoPlay)
+			|| g.config.AutoPlay == AutoPlay_All) {
+		*buttons |= PSP_CTRL_CIRCLE;
+	}
+}
+
+void H_draw() {
 	if(need_draw) Draw();
 }
 
 __asm__(
-	".global h_test"									BREAK
-	"h_test:"											BREAK
+	".global h_draw"									BREAK
+	"h_draw:"											BREAK
 	"    addiu   $sp, $sp, -8"					       	BREAK
 	"    sw      $ra, 0($sp)"					       	BREAK
 	"    sw      $a0, 4($sp)"					       	BREAK
 
-	"    jal    H_test"									BREAK
+	"    jal    H_draw"									BREAK
 
 	"    lui     $a1, %hi(g)"							BREAK
 	"    addiu   $a1, %lo(g)"							BREAK
-	"    lw      $a1,"  S(OFF_sub_test)  "($a1)"      	BREAK
+	"    lw      $a1,"  S(OFF_sub_draw)  "($a1)"      	BREAK
 	"    lw      $ra, 0($sp)"					       	BREAK
 	"    lw      $a0, 4($sp)"					       	BREAK
 	"    addiu   $sp, $sp, 8"					       	BREAK
@@ -109,6 +147,7 @@ __asm__(
 	"    li      $t0, 0x64"										BREAK
 	"    lui     $t4, %hi(g)"									BREAK
 	"    addiu   $t4, %lo(g)"									BREAK
+	"    sw      $zero, "  S(OFF_od_isdlg)  "($t4)"			BREAK
 	"    lw      $t5, "  S(OFF_cfg_disdlg)  "($t4)"				BREAK
 	"    beq     $t5, $zero, call_se"							BREAK
 	"    lw      $t5, "  S(OFF_od_disdlg)  "($t4)"				BREAK
@@ -228,6 +267,8 @@ __asm__  (
 	"    lw      $t0, "  S(OFF_pfm_cnt)  "($t4)"				BREAK
 	"    lw      $t0, 0($t0)"									BREAK
 	"    sw      $t0, "  S(OFF_ap_fms)  "($t4)"					BREAK
+	"    li      $t0, 1"										BREAK
+	"    sw      $t0, "  S(OFF_od_isdlg)  "($t4)"				BREAK
 
 	"code_notfirst:"											BREAK
 	"    addiu   $v0, $v0, 1"					       			BREAK
@@ -241,46 +282,22 @@ __asm__  (
 __asm__(
 	".global h_ctrl"									BREAK
 	"h_ctrl:"											BREAK
-	"    lbu     $v1, 9($sp)"							BREAK
+	"    addiu   $a0, $sp, 4"					        BREAK
 
-	"    lui     $t4, %hi(g)"							BREAK
-	"    addiu   $t4, %lo(g)"							BREAK
+	"    addiu   $sp, $sp, -8"					       	BREAK
+	"    sw      $ra, 4($sp)"					        BREAK
+	"    sw      $v0, 0($sp)"					        BREAK
 
-	"    lw      $t0, "  S(OFF_ap_tend)  "($t4)"		BREAK
-	"    beq     $t0, $zero, ctrl_ret"					BREAK
+	"    jal     H_ctrl"						        BREAK
 
-	"    lw      $t0, "  S(OFF_pfm_cnt)  "($t4)"		BREAK
-	"    lw      $t0, 0($t0)"							BREAK
+	"    lw      $ra, 4($sp)"					        BREAK
+	"    lw      $v0, 0($sp)"					        BREAK
+	"    addiu   $sp, $sp, 8"					       	BREAK
 
-	"    lw      $t1, "  S(OFF_ap_fmva)  "($t4)"		BREAK
-	"    blt	 $t0, $t1, ctrl_ret"					BREAK
+	"    lbu     $v1, 9($sp)"					       	BREAK
+	"    lw      $a2, 4($sp)"					       	BREAK
+	"    move    $a0, $a2"					      	 	BREAK
 
-	"    lw      $t1, "  S(OFF_ap_fma)  "($t4)"			BREAK
-	"    blt	 $t0, $t1, ctrl_ret"					BREAK
-
-	"    lw      $t1, "  S(OFF_ap_fmvs)  "($t4)"		BREAK
-	"    lw      $t0, "  S(OFF_cfg_aup)  "($t4)"		BREAK
-
-	"    sw      $zero, " S(OFF_ap_tend)  "($t4)"		BREAK
-	"    sw      $zero, " S(OFF_ap_tcnt)  "($t4)"		BREAK
-	"    sw      $zero, " S(OFF_ap_fmvs)  "($t4)"		BREAK
-	"    sw      $zero, " S(OFF_ap_fms)  "($t4)"		BREAK
-
-	"    beq	 $t1, $zero, no_voice" 					BREAK
-	"    beq	 $t0, $zero, ctrl_ret" 					BREAK
-	"    j       set_autoplay"							BREAK
-
-	"no_voice:" 										BREAK
-	"    li      $t1, "  S(AutoPlay_All)  				BREAK
-	"    bne	 $t0, $t1, ctrl_ret" 					BREAK
-
-	"set_autoplay:" 									BREAK
-	"    lw      $a2, 4($sp)" 							BREAK
-	"    ori     $a2, $a2, " S(CTRL_OK) 				BREAK
-	"    sw      $a2, 4($sp)" 							BREAK
-	"    move    $a0, $a2" 								BREAK
-
-	"ctrl_ret:"
 	"    jr   $ra"										BREAK
 );
 
@@ -307,6 +324,7 @@ __asm__(
 	"    sw      $zero, " S(OFF_ap_tcnt)  "($s0)"		BREAK
 	"    sw      $zero, " S(OFF_ap_fmvs)  "($s0)"		BREAK
 	"    sw      $zero, " S(OFF_ap_fms)  "($s0)"		BREAK
+	"    sw      $zero, " S(OFF_od_isdlg)  "($s0)"		BREAK
 
 	"    addu    $v0, $v0, $v1"							BREAK
 	"    jr      $ra"									BREAK

@@ -35,7 +35,7 @@ static u32 HookAddrList_Zero[] = {
 	0x0883DAE0, //pfm_cnt
 	0x088F4FB4, //codeA
 	0, //dis_orivoice
-	0x08A1D58C
+	0x08A1D58C //draw
 };
 
 static u32 HookAddrList_Ao[] = {
@@ -48,7 +48,7 @@ static u32 HookAddrList_Ao[] = {
 	0x0883F14C, //pfm_cnt
 	0x088FC640, //codeA
 	0x088FC3E8, //dis_orivoice
-	0,
+	0x08A42CB0,//draw
 };
 #define IDX_HOOKADDR_DIS_ORIVOICE 8
 
@@ -62,7 +62,7 @@ static const u32 HookOperandList[] = {
 	(u32)&h_pfm_cnt,
 	(u32)&h_codeA,
 	CODE_NOP,//dis_orivoice
-	(u32)&h_test
+	(u32)&h_draw
 };
 static const u32 HookOperand2List[] = {
 	0, //voice instruction
@@ -74,7 +74,7 @@ static const u32 HookOperand2List[] = {
 	0, //pfm_cnt
 	0, //codeA
 	0,//dis_orivoice
-	(u32)&g.ha.addr_test,
+	(u32)&g.ha.addr_draw,
 };
 static const u32 HookTyperList[] = {
 	HookType_JAL, //voice instruction

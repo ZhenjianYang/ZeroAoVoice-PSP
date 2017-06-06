@@ -24,7 +24,7 @@ void h_pfm_cnt();
 
 void h_codeA();
 
-void h_test();
+void h_draw();
 
 
 #ifdef __cplusplus

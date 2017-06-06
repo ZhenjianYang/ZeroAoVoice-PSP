@@ -11,6 +11,7 @@
 #include "hook.h"
 #include "config.h"
 #include "global.h"
+#include "message.h"
 #include "draw.h"
 #include "log.h"
 
@@ -21,8 +22,6 @@ Global g;
 
 #define UMDID_AO "NPJH-50473"
 #define PATH_BASE_AO "ms0:/PSP/za_voice/ao/"
-
-#define PATH_CONFIG "ms0:/PSP/za_voice/za_voice.ini"
 
 static const struct {
 	const char ext[4];
@@ -168,8 +167,8 @@ int InitZaVoice(unsigned args, void *argp)
 	LOG("All init Done.");
 
 	Info info = {
-			0,
-			"AWMghyYOPXZj"
+			Msg_Time_Hello,
+			Msg_Hello
 	};
 	AddInfo(&info);
 	return 0;

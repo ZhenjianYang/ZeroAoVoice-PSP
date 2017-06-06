@@ -10,7 +10,6 @@
 #include <pspge.h>
 
 #define CH_HEIGTH 16
-#define MARGIN 1
 #define MAX_INFO_WIDTH 256
 
 #define MAX_UINT 0xFFFFFFFF
@@ -94,9 +93,8 @@ bool AddInfo(const Info *info) {
 		const u8* pch = fnt_data + off_ch;
 		int width = (off_ch_next - off_ch) / CH_HEIGTH;
 
-		if(_draw.width + width + MARGIN > MAX_INFO_WIDTH) break;
+		if(_draw.width + width  > MAX_INFO_WIDTH) break;
 
-		_draw.width += MARGIN;
 		for(int y = 0; y < CH_HEIGTH; y++) {
 			for(int xx = 0; xx < width; xx++) {
 				u8 bit = *pch++;

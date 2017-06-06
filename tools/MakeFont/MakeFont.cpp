@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <string>
 #include <fstream>
 #include <algorithm>
 
@@ -12,17 +13,53 @@ using namespace std;
 
 constexpr int FONT_SIZE = 16;
 constexpr int CH_CNT = 128;
-constexpr int HORI = 3;
 
 int main(int argc, char *argv[]) {
-	if (argc <= 2) {
+	int base_line = 3;
+
+	int arg_idx = 0;
+	int arg_tmp;
+	char* arg_pend;
+	const char* path_ttf = nullptr;
+
+	for(int i = 1; i < argc; i++) {
+		if(argv[i][0] == '-') {
+			switch(argv[i][1]) {
+			case 'h':
+				arg_tmp = std::strtol(argv[i] + 2, &arg_pend, 10);
+				if(arg_pend == argv[i] + 2 || *arg_pend) {
+					cout << "bad parameter, ignore: " << argv[i] << endl;
+				} else {
+					base_line = arg_tmp;
+				}
+				break;
+			default:
+				cout << "Unknow parameter, ignore: " << argv[i] << endl;
+			}
+		} else {
+			switch(arg_idx) {
+			case 0:
+				path_ttf = argv[i];
+				break;
+			default:
+				cout << "Too more parameter, ignore: " << argv[i] << endl;
+			}
+			arg_idx++;
+		}
+	}
+
+	if (!path_ttf) {
 		cout << "Usage :\n"
-			<< "\t" "MakeFont font.raw ttf" << endl;
+				"\t" "MakeFont [options] ttf_file" "\n"
+				"\t" "  options :"  "\n"
+				"\t" "      -hY : set vertical position to Y, default is 3" "\n"
+				"\t" "            (bigger for higher, could be negative.)"
+			<< endl;
 		return 0;
 	}
 
-	const char* path_out = argv[1];
-	const char* path_ttf = argv[2];
+	const char* path_dat = "font.dat";
+	const char* path_bmp = "font.bmp";
 	
 	FT_Library library = NULL;
 	FT_Face face = NULL;
@@ -58,30 +95,21 @@ int main(int argc, char *argv[]) {
 		}
 
 		FT_Bitmap* bitmap = &(face->glyph->bitmap);
-		int width = bitmap->width;
+
+		int x0 = face->glyph->bitmap_left;
+		int y0 = FONT_SIZE - base_line - face->glyph->bitmap_top;
+		int width = face->glyph->advance.x >> 6;
 
 		memset(pdata, 0, width * FONT_SIZE);
 
-		int y0 = FONT_SIZE - HORI - face->glyph->bitmap_top;
-		int rows = bitmap->rows;
-		byte* dst = pdata;
-		byte* src = bitmap->buffer;
-
-		if(y0 > 0) {
-			dst += y0 * width;
-			if(rows > FONT_SIZE - y0) {
-				rows = FONT_SIZE - y0;
+		byte* p = bitmap->buffer;
+		for(int y = 0; y < (int)bitmap->rows && y < FONT_SIZE - y0; y++) {
+			if(y + y0 < 0) continue;
+			for(int x = 0; x < (int)bitmap->width && x < width - x0; x++) {
+				if(x + x0 < 0) continue;
+				pdata[(y + y0) * width + (x + x0)] = p[y * bitmap->width + x];
 			}
 		}
-		else if(y0 < 0){
-			src += (-y0) * width;
-			rows += y0;
-			if(rows > FONT_SIZE) {
-				rows = FONT_SIZE;
-			}
-		}
-
-		memcpy(dst, src, bitmap->width * rows);
 
 		pdata += width * FONT_SIZE;
 	}
@@ -90,7 +118,7 @@ int main(int argc, char *argv[]) {
 	FT_Done_FreeType(library);
 
 	int size = pdata - base;
-	ofstream ofs(path_out, ios::binary);
+	ofstream ofs(path_dat, ios::binary);
 	if (!ofs) {
 		cout << "Create output file failed." << endl;
 		return -1;
@@ -99,7 +127,73 @@ int main(int argc, char *argv[]) {
 	ofs.write((const char*)base, size);
 	ofs.close();
 
-	cout << "Created." << endl;
+	cout << "Dat Created." << endl;
 
+	int total_bits = size - CH_CNT * 2;
+	int total_width = total_bits / FONT_SIZE;
+	unique_ptr<byte[]> sbuff_bmp = make_unique<byte[]>(total_bits);
+	byte* buff_bmp = sbuff_bmp.get();
+
+	int x = 0;
+	poff = (uint16_t *)base;
+	for(int i = 0; i < CH_CNT; i++) {
+		int cnt_bits = i == CH_CNT - 1 ? size - poff[i] : poff[i+1] - poff[i];
+		int w = cnt_bits / FONT_SIZE;
+		byte* pdat = (byte*)base + poff[i];
+		for(int y = 0; y < FONT_SIZE; y++) {
+			for(int xx = 0; xx < w; xx++) {
+				buff_bmp[(FONT_SIZE - 1 - y) * total_width + x + xx] = *pdat++;
+			}
+		}
+		x += w;
+	}
+
+	using WORD = uint16_t;
+	using DWORD = uint32_t;
+	using LONG = int32_t;
+
+#pragma pack(1)
+	typedef struct tagBITMAPFILEHEADER {
+	  WORD  bfType;
+	  DWORD bfSize;
+	  WORD  bfReserved1;
+	  WORD  bfReserved2;
+	  DWORD bfOffBits;
+	} BITMAPFILEHEADER;
+	typedef struct tagBITMAPINFOHEADER {
+	  DWORD biSize;
+	  LONG  biWidth;
+	  LONG  biHeight;
+	  WORD  biPlanes;
+	  WORD  biBitCount;
+	  DWORD biCompression;
+	  DWORD biSizeImage;
+	  LONG  biXPelsPerMeter;
+	  LONG  biYPelsPerMeter;
+	  DWORD biClrUsed;
+	  DWORD biClrImportant;
+	} BITMAPINFOHEADER;
+#pragma pack()
+
+	BITMAPFILEHEADER file_header = { 0x4D42 };
+	BITMAPINFOHEADER info_header = { sizeof(BITMAPINFOHEADER), total_width, FONT_SIZE,
+			1, 8, 0, unsigned(total_width * FONT_SIZE), 0, 0, 256, 0 };
+	uint32_t palette[256];
+	for(int i = 0; i < 256; i++) palette[i] = (0xFF << 24) | (0x010101 * i);
+	file_header.bfOffBits = sizeof(file_header) + sizeof(info_header) + sizeof(palette);
+	file_header.bfSize = file_header.bfOffBits + total_width * FONT_SIZE;
+
+	ofstream ofs_bmp(path_bmp, ios::binary);
+	if (!ofs) {
+		cout << "Create bmp file failed." << endl;
+		return -1;
+	}
+	ofs_bmp.write((char*)&file_header, sizeof(file_header));
+	ofs_bmp.write((char*)&info_header, sizeof(info_header));
+	ofs_bmp.write((char*)palette, sizeof(palette));
+	ofs_bmp.write((char*)buff_bmp, total_width * FONT_SIZE);
+	ofs_bmp.close();
+
+	cout << "Bmp Created." << endl;
 	return 0;
 }

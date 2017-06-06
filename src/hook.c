@@ -86,7 +86,7 @@ static const u32 HookTyperList[] = {
 	HookType_JAL,//pfm_cnt
 	HookType_JAL,//codeA
 	HookType_FixOP,//dis_orivoice
-	HookType_JAL | HookType_SaveOldJmpAddr,//dlgse
+	HookType_JAL | HookType_SaveOldJmpAddr,//draw
 };
 
 #define HookCount (sizeof(HookTyperList) / sizeof(*HookTyperList))

@@ -8,6 +8,7 @@
 #include "log.h"
 
 #include <pspge.h>
+#include <pspsysmem.h>
 
 #define CH_HEIGTH 16
 #define MAX_INFO_WIDTH 256
@@ -36,6 +37,10 @@ static const u8* fnt_data;
 static const OffType *off_list;
 static int fnt_cnt;
 
+static SceUID memID = -1;
+static void* vbuff = NULL;
+#define VBUFF_SIZE (PSP_VRAM_WIDTH * CH_HEIGTH * sizeof(BitType))
+
 bool InitDraw() {
 	fnt_data = (const u8*)&font_dat_start;
 	off_list = (const OffType*)fnt_data;
@@ -47,23 +52,61 @@ bool InitDraw() {
 		"    fnt_data = 0x%08X",
 		(unsigned)off_list, fnt_cnt, (unsigned)fnt_data);
 
+	if(g.config.PPSSPP) {
+		memID = sceKernelAllocPartitionMemory(2, "VBUFF", 0, VBUFF_SIZE, NULL);
+		if(memID >= 0) {
+			vbuff = sceKernelGetBlockHeadAddr(memID);
+		}
+
+		LOG("Alloc Memory, addr = 0x%08X", (unsigned)vbuff);
+	}
+
+	return true;
+}
+
+bool EndDraw() {
+	if(memID >= 0) {
+		sceKernelFreePartitionMemory(memID);
+		memID = -1;
+		vbuff = NULL;
+	}
 	return true;
 }
 
 int Draw() {
-	if(!g.pfm_cnt) return 0;
-	unsigned cur_time = *g.pfm_cnt;
+	unsigned cur_time = g.pfm_cnt ? *g.pfm_cnt : 0;
+	if(cur_time < 10) return 0;
 
 	if(_draw.dead_time < cur_time) return need_draw = 0;
 
-	BitType* p = (BitType*)VRAM;
-	BitType* q = p +  PSP_VRAM_WIDTH * PSP_VRAM_HEIGHT;
+	if(!vbuff) {
+		BitType* p = (BitType*)VRAM;
+		BitType* q = p +  PSP_VRAM_WIDTH * PSP_VRAM_HEIGHT;
 
-	for(int j = 0;j < CH_HEIGTH; j++) {
-		sceDmacMemcpy(p, _draw.data[j], _draw.width * sizeof(**_draw.data));
-		sceDmacMemcpy(q, _draw.data[j], _draw.width * sizeof(**_draw.data));
-		p += PSP_VRAM_WIDTH;
-		q += PSP_VRAM_WIDTH;
+		for(int j = 0;j < CH_HEIGTH; j++) {
+			sceDmacMemcpy(p, _draw.data[j], _draw.width * sizeof(**_draw.data));
+			sceDmacMemcpy(q, _draw.data[j], _draw.width * sizeof(**_draw.data));
+			p += PSP_VRAM_WIDTH;
+			q += PSP_VRAM_WIDTH;
+		}
+	} else {
+		//In ppsspp, code above has no effect, should do like this.
+		//Have no idea why...
+		BitType* p = (BitType*)VRAM;
+		for(int buff_no = 0; buff_no < 2; buff_no++) {
+			sceDmacMemcpy(vbuff, p, VBUFF_SIZE);
+
+			BitType* q = (BitType*)vbuff;
+			for(int j = 0;j < CH_HEIGTH; j++) {
+				for(int i = 0; i < _draw.width; i++) {
+					q[i] = _draw.data[j][i];
+				}
+				q += PSP_VRAM_WIDTH;
+			}
+
+			sceDmacMemcpy(p, vbuff, VBUFF_SIZE);
+			p += PSP_VRAM_WIDTH * PSP_VRAM_HEIGHT;
+		}
 	}
 	return need_draw = 1;
 }

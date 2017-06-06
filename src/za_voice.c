@@ -127,7 +127,9 @@ int InitZaVoice(unsigned args, void *argp)
 		"    WaitTimeDialogWithVoice  = %d\n"
 		"    SkipVoice                = %d\n"
 		"    DisableDialogTextSE      = %d\n"
-		"    DisableDialogSwitchSE    = %d",
+		"    DisableDialogSwitchSE    = %d\n"
+		"    ShowInfo                 = %d\n"
+		"    PPSSPP                   = %d",
 		g.config.Volume,
 		g.config.AutoPlay,
 		g.config.WaitTimePerChar,
@@ -135,7 +137,9 @@ int InitZaVoice(unsigned args, void *argp)
 		g.config.WaitTimeDialogWithVoice,
 		g.config.SkipVoice,
 		g.config.DisableDialogTextSE,
-		g.config.DisableDialogSwitchSE
+		g.config.DisableDialogSwitchSE,
+		g.config.ShowInfo,
+		g.config.PPSSPP
 	);
 	SaveConfig(&g.config, PATH_CONFIG);
 
@@ -177,5 +181,6 @@ int InitZaVoice(unsigned args, void *argp)
 int EndZaVoice(unsigned args, void *argp) {
 	CleanHook();
 	EndPlayer();
+	EndDraw();
 	return 0;
 }

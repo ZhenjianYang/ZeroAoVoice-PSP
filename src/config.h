@@ -27,6 +27,9 @@ typedef struct Config {
 	int DisableDialogTextSE;
 	int DisableDialogSwitchSE;
 	int DisableOriginalVoice;
+	int ShowInfo;
+
+	int PPSSPP;
 } Config;
 
 bool LoadConfig(struct Config* config, const char* cfg_file);

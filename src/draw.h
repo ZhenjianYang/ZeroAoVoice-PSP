@@ -16,6 +16,7 @@ typedef struct Info {
 } Info;
 
 bool InitDraw();
+bool EndDraw();
 
 int Draw();
 

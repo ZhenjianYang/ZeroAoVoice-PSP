@@ -1,8 +1,8 @@
 TARGET = MakeFont.out
 OBJS = MakeFont.o
 
-LIBS = -lfreetype -lstdc++
-INCS = -I/usr/include/freetype2
+LIBS = $(shell pkg-config --libs freetype2) -lstdc++
+INCS = $(shell pkg-config --cflags freetype2)
 
 ifeq ($(DEBUG),1)
 CFLAGS = -O0 -Wall -g -ggdb3 $(INCS)

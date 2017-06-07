@@ -2,7 +2,7 @@ TARGET = za_voice
 ATTR = prx
 
 OBJS = za_voice_entry.o za_voice.o hook.o hook2.o ctrl.o  \
-			draw.o player.o config.o \
+			draw.o player.o config.o voice_pack.o \
 			io.o event.o mutex.o  \
 			sceKernelMutex.o sceDmac.o \
 

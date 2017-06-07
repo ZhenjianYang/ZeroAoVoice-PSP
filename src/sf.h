@@ -9,10 +9,15 @@
 
 #define NUM_CHANNELS_BUF 2
 
+typedef enum Sf_Open_Mode {
+	Sf_Open_Mode_FileName,
+	Sf_Open_Mode_IoHandle
+} Sf_Open_Mode;
+
 typedef u16 SampleType;
 
 typedef struct SoundFile {
-	bool (*Open)(const char* filename);
+	bool (*Open)(void* source, Sf_Open_Mode mode);
 	int (*Read)(SampleType (*buff_dec)[NUM_CHANNELS_BUF], int count);
 	void (*Close)();
 

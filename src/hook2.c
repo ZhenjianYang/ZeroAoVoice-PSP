@@ -29,23 +29,32 @@ void InitHook2() {
 	}
 	_len_prefix += sizeof(VOICE_FILE_PREFIX) - 1;
 
-	_play.filename = _buff_voicefile;
+	if(!g.vp.count) {
+		_play.filename = _buff_voicefile;
+	} else {
+		_play.filename = NULL;
+	}
+
 	_play.volume = g.config.Volume;
 	_play.initSf = g.initSf;
 }
 
-void H_voice(const char* p) {
+void H_voice(const char* p, unsigned voice_id) {
 	if(*p != 'v') return;
 
-	const char* q = p - 1;
-	while(q >= p - MAX_VOICEID_LEN - 1 && *q != '#') q--;
-	if(*q != '#' || p - q <= 1) return;
+	if(_play.filename) {
+		const char* q = p - 1;
+		while(q >= p - MAX_VOICEID_LEN - 1 && *q != '#') q--;
+		if(*q != '#' || p - q <= 1) return;
 
-	q++;
-	char* t = _buff_voicefile + _len_prefix;
-	while(q < p) *t++ = *q++;
-	*t++ = '.';
-	for(unsigned i = 0; i < sizeof(g.voice_ext); i++) *t++ = g.voice_ext[i];
+		q++;
+		char* t = _buff_voicefile + _len_prefix;
+		while(q < p) *t++ = *q++;
+		*t++ = '.';
+		for(unsigned i = 0; i < sizeof(g.voice_ext); i++) *t++ = g.voice_ext[i];
+	} else {
+		_play.voice_id = voice_id;
+	}
 
 	_play.volume = g.config.Volume;
 	PlaySound(&_play);
@@ -115,6 +124,7 @@ __asm__(
 	"    li   $a0, 'v'"									BREAK
 	"    bne  $a0, $a1, voice_return"					BREAK
 	"    add  $a0, $s0, $zero"							BREAK
+	"    add  $a1, $s3, $zero"							BREAK
 	"    j    H_voice"									BREAK
 	"voice_return:"										BREAK
 	"    jr   $ra"										BREAK

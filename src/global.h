@@ -2,6 +2,7 @@
 
 #include "hook_data.h"
 #include "config.h"
+#include "voice_pack.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,6 +35,7 @@ typedef struct Global {
 	HookAddr ha;
 
 	Config config;
+	VoicePack vp;
 } Global;
 
 extern Global g;

@@ -2,7 +2,7 @@
 
 #define FillZero(ptr, size) { for(unsigned __i = 0; __i < size; __i++) *((char*)ptr + __i) = 0; }
 
-static bool _Open(const char* filename);
+static bool _Open(void* source, Sf_Open_Mode mode);
 static int _Read(SampleType(*buff)[NUM_CHANNELS_BUF], int count);
 static void _Close();
 static SoundFile* _sf;
@@ -40,14 +40,18 @@ typedef struct WAVHead
 } WAVHead;
 
 static IoHandle _file = NULL;
+static Sf_Open_Mode _mode;
 
-bool _Open(const char* filename) {
-#define FAILED_IF(condition) if(condition) { IoFClose(_file); _file = NULL; return false; }
-
+bool _Open(void* source, Sf_Open_Mode mode) {
+	_mode = mode;
+#define FAILED_IF(condition) if(condition) { if(_mode == Sf_Open_Mode_FileName) IoFClose(_file); _file = NULL; return false; }
 	WAVHead head;
 
-	_file = IoFOpen(filename, IO_O_RDONLY);
-	if (_file == 0) {
+	_file = _mode == Sf_Open_Mode_FileName ?
+			IoFOpen((const char*)source, IO_O_RDONLY)
+			: (IoHandle)source;
+
+	if (_file == NULL) {
 		return false;
 	}
 	FAILED_IF(!IoFRead(&head, sizeof(head), 1, _file));
@@ -90,9 +94,9 @@ int _Read(SampleType (*buff)[NUM_CHANNELS_BUF], int count) {
 }
 
 void _Close() {
-	if (_file) {
+	if (_file && _mode == Sf_Open_Mode_FileName) {
 		IoFClose(_file);
-		_file = NULL;
 	}
+	_file = NULL;
 }
 

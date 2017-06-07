@@ -2,7 +2,7 @@
 
 #define FillZero(ptr, size) { for(unsigned __i = 0; __i < size; __i++) *((u8*)(ptr) + __i) = 0; }
 
-static bool _Open(const char* filename);
+static bool _Open(void* source, Sf_Open_Mode mode);
 static int _Read(SampleType(*buff)[NUM_CHANNELS_BUF], int count);
 static void _Close();
 static SoundFile* _sf;
@@ -41,11 +41,15 @@ static int _remain_frames;
 static int _flagDecEnd;
 
 static IoHandle _file = NULL;
+static Sf_Open_Mode _mode;
 static int _at3Id = -1;
 
-bool _Open(const char* filename) {
-#define FAILED_IF(condition) if(condition) { IoFClose(_file); _file = NULL; return false; }
-	_file = IoFOpen(filename, IO_O_RDONLY);
+bool _Open(void* source, Sf_Open_Mode mode) {
+#define FAILED_IF(condition) if(condition) { if(_mode == Sf_Open_Mode_FileName) IoFClose(_file); _file = NULL; return false; }
+	_file = _mode == Sf_Open_Mode_FileName ?
+				IoFOpen((const char*)source, IO_O_RDONLY)
+				: (IoHandle)source;
+
 	if (!_file) return false;
 
 	_buff_src_len = IoFRead(_buff_src, 1, sizeof(_buff_src), _file);

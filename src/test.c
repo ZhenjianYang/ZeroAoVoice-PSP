@@ -23,7 +23,7 @@ Global g;
 
 typedef struct Test {
 	InitSfCall initCall;
-	const char fileName[64];
+	char fileName[64];
 } Test;
 static Test tests[] = {
 	{ &InitAt3, TEST_AT3 },
@@ -199,7 +199,7 @@ int main(void)
 	test->initCall(&sf);
 
 	LOG("open %s...", test->fileName);
-	rst = sf.Open(test->fileName);
+	rst = sf.Open(test->fileName, Sf_Open_Mode_FileName);
 	LOG("Finished. %d", rst);
 	LOG("Sound File Info:\n"
 		"    FormatTag = 0x%04X\n"

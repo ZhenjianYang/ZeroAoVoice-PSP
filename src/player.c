@@ -2,6 +2,7 @@
 #include <pspthreadman.h>
 
 #include "player.h"
+#include "voice_pack.h"
 #include "global.h"
 #include "sf.h"
 #include "event.h"
@@ -45,6 +46,7 @@ static SoundFile _sf;
 
 static InitSfCall _initSfCall;
 static char _fileName[64];
+static unsigned _voice_id;
 static MutexHandle _mt;
 
 static SceUID _th_sound = -1;
@@ -116,7 +118,14 @@ static int readThread(SceSize args, void *argp) {
 			EventWait(_evh_read, StopPlayDone, EVENT_WAITAND | EVENT_WAITCLEAR);
 
 			MutexLock(_mt);
-			bool ok = _initSfCall && _initSfCall(&_sf) && _sf.Open(_fileName);
+			bool ok = _initSfCall(&_sf);
+			if(ok) {
+				if(_voice_id == 0) {
+					ok = VP_SetOffset(&g.vp, _voice_id) && _sf.Open(g.vp.ioh, Sf_Open_Mode_IoHandle);
+				} else {
+					ok = _sf.Open(_fileName, Sf_Open_Mode_FileName);
+				}
+			}
 			MutexUnlock(_mt);
 
 			if(!ok) {
@@ -238,15 +247,26 @@ bool EndPlayer() {
 }
 
 bool PlaySound(struct Play* play) {
-	LOG("File: %s, volume = 0x%04X, init = 0x%08X", play->filename, play->volume, (unsigned)play->initSf);
+	LOG("File: %s, voice_id = %09d, volume = 0x%04X, init = 0x%08X",
+			play->filename ? play->filename : "NULL",
+			play->voice_id,
+			play->volume,
+			(unsigned)play->initSf);
+
+	if((!play->filename && !play->voice_id) || !play->initSf) return false;
 
 	MutexLock(_mt);
 	_volume = play->volume;
 	_initSfCall = (InitSfCall)play->initSf;
-	for(unsigned i = 0; i < sizeof(_fileName) && play->filename[i]; i++) {
-		_fileName[i] = play->filename[i];
+	if(play->filename) {
+		for(unsigned i = 0; i < sizeof(_fileName) && play->filename[i]; i++) {
+			_fileName[i] = play->filename[i];
+		}
+		_fileName[sizeof(_fileName) - 1] = '\0';
+		_voice_id = 0;
+	} else {
+		_voice_id = play->voice_id;
 	}
-	_fileName[sizeof(_fileName) - 1] = '\0';
 	MutexUnlock(_mt);
 
 	g.order.disableDududu = g.order.disableDlgSe = 1;

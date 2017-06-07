@@ -8,6 +8,7 @@ extern "C" {
 
 typedef struct Play {
 	const char* filename;
+	unsigned voice_id;
 	int volume;
 	void* initSf;
 } Play;

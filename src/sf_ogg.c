@@ -2,7 +2,7 @@
 
 #define FillZero(ptr, size) { for(unsigned __i = 0; __i < size; __i++) *((char*)ptr + __i) = 0; }
 
-static bool _Open(const char* filename);
+static bool _Open(void* source, Sf_Open_Mode mode);
 static int _Read(SampleType(*buff)[NUM_CHANNELS_BUF], int count);
 static void _Close();
 static SoundFile* _sf;
@@ -26,18 +26,30 @@ static ov_callbacks ov_callbacks_Io = {
 	IoFClose,
 	IoFTell
 };
+static ov_callbacks ov_callbacks_Io_NoClose = {
+	IoFRead,
+	IoFSeek,
+	NULL,
+	IoFTell
+};
 
 static OggVorbis_File _ovFile;
+static Sf_Open_Mode _mode;
 
-bool _Open(const char* filename) {
-#define FAILED_IF(condition) if(condition) { IoFClose(file); file = NULL; return false; }
+bool _Open(void* source, Sf_Open_Mode mode) {
+	_mode = mode;
+#define FAILED_IF(condition) if(condition) { if(_mode == Sf_Open_Mode_FileName) IoFClose(_file); _file = NULL; return false; }
 
-	void* file= IoFOpen(filename, IO_O_RDONLY);
-	if (file == NULL) {
+	void* _file = _mode == Sf_Open_Mode_FileName ?
+		IoFOpen((const char*)source, IO_O_RDONLY)
+		: (IoHandle)source;
+	if (_file == NULL) {
 		return false;
 	}
 
-	FAILED_IF(ov_open_callbacks(file, &_ovFile, 0, 0, ov_callbacks_Io));
+	FAILED_IF(ov_open_callbacks(_file, &_ovFile, 0, 0,
+			_mode == Sf_Open_Mode_FileName ? ov_callbacks_Io : ov_callbacks_Io_NoClose));
+
 	vorbis_info* info = ov_info(&_ovFile, -1);
 
 	_sf->formatTag = FORMAT_TAG_OGG;
@@ -46,7 +58,10 @@ bool _Open(const char* filename) {
 	_sf->blockAlign = info->channels * 2;
 	_sf->avgBytesPerSec = _sf->blockAlign * _sf->samplesPerSec;
 
-	FAILED_IF(_sf->channels > 2);
+	if(_sf->channels > 2) {
+		ov_clear(&_ovFile);
+		return false;
+	}
 
 	_sf->samplesRead = 0;
 	_sf->samplesTotal = ov_pcm_total(&_ovFile, -1);

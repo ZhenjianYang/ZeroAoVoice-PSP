@@ -1,5 +1,5 @@
 TARGET = VTest
-OBJS = test.o player.o config.o io.o event.o mutex.o \
+OBJS = test.o player.o voice_pack.o config.o io.o event.o mutex.o \
 			sceKernelMutex.o sceDmac.o
 
 DIR_BIN = bin

@@ -27,11 +27,14 @@ typedef struct AutoPlay {
 typedef struct Order {
 	int disableDududu;
 	int disableDlgSe;
+
+	int isDlg;
 } Order;
 
 typedef struct HookAddr {
 	unsigned addr_sub_se;
 	unsigned addr_ge;
+	unsigned addr_draw;
 } HookAddr;
 
 

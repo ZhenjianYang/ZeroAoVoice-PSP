@@ -1,5 +1,6 @@
 TARGET = VTest
-OBJS = test.o player.o config.o io.o event.o mutex.o pspthreadman_mutex.o
+OBJS = test.o player.o config.o io.o event.o mutex.o \
+			sceKernelMutex.o sceDmac.o
 
 DIR_BIN = bin
 DIR_SRC = src

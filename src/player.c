@@ -270,3 +270,7 @@ bool StopSound() {
 	return true;
 }
 
+bool SetVolume(int volume) {
+	_volume = volume;
+	return true;
+}

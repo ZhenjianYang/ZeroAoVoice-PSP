@@ -15,6 +15,7 @@ DEFINE_OFFSET_WName(cfg_disori, Global, config.DisableOriginalVoice);
 DEFINE_OFFSET(Global, order);
 DEFINE_OFFSET_WName(od_disdu, Global, order.disableDududu);
 DEFINE_OFFSET_WName(od_disdlg, Global, order.disableDlgSe);
+DEFINE_OFFSET_WName(od_isdlg, Global, order.isDlg);
 
 
 DEFINE_OFFSET(Global, autoPlay);
@@ -30,6 +31,7 @@ DEFINE_OFFSET_WName(ap_fmva, Global, autoPlay.fm_voice_auto);
 DEFINE_OFFSET(Global, ha);
 DEFINE_OFFSET_WName(sub_se, Global, ha.addr_sub_se);
 DEFINE_OFFSET_WName(sub_ge, Global, ha.addr_ge);
+DEFINE_OFFSET_WName(sub_draw, Global, ha.addr_draw);
 
 DEFINE_OFFSET(Global, pfm_cnt);
 DEFINE_OFFSET(Global, off_pfm_cnt);

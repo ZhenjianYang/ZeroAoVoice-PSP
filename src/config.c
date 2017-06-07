@@ -12,6 +12,9 @@
 #define DFT_DisableDialogTextSE		1
 #define DFT_DisableDialogSwitchSE	1
 #define DFT_DisableOriginalVoice	1
+#define DFT_ShowInfo				1
+#define DFT_PPSSPP					0
+
 
 #define STR_Volume					"Volume"
 #define STR_AutoPlay				"AutoPlay"
@@ -22,6 +25,8 @@
 #define STR_DisableDialogTextSE		"DisableDialogTextSE"
 #define STR_DisableDialogSwitchSE	"DisableDialogSwitchSE"
 #define STR_DisableOriginalVoice	"DisableOriginalVoice"
+#define STR_ShowInfo				"ShowInfo"
+#define STR_PPSSPP					"PPSSPP"
 
 #define STR_EQUAL "="
 #define STR_SPACE " "
@@ -40,6 +45,8 @@ static void inline _LoadDefault(Config* config) {
 	SET_DFT(config, DisableDialogTextSE);
 	SET_DFT(config, DisableDialogSwitchSE);
 	SET_DFT(config, DisableOriginalVoice);
+	SET_DFT(config, ShowInfo);
+	SET_DFT(config, PPSSPP);
 }
 
 static inline int _StrCmp(const char* s1, const char *s2) {
@@ -88,6 +95,8 @@ bool LoadConfig(struct Config* config, const char* cfg_file) {
 		SET_VALUE(config, DisableDialogTextSE, buff, value);
 		SET_VALUE(config, DisableDialogSwitchSE, buff, value);
 		SET_VALUE(config, DisableOriginalVoice, buff, value);
+		SET_VALUE(config, ShowInfo, buff, value);
+		SET_VALUE(config, PPSSPP, buff, value);
 	}
 
 	IoFClose(ioh);
@@ -102,6 +111,8 @@ bool LoadConfig(struct Config* config, const char* cfg_file) {
 	FIX_VALUE_BOOL(config, DisableDialogTextSE);
 	FIX_VALUE_BOOL(config, DisableDialogSwitchSE);
 	FIX_VALUE_BOOL(config, DisableOriginalVoice);
+	FIX_VALUE_BOOL(config, ShowInfo);
+	FIX_VALUE_BOOL(config, PPSSPP);
 
 	return true;
 }
@@ -126,6 +137,8 @@ bool SaveConfig(const struct Config* config, const char* cfg_file) {
 	WRITE_CONFIG(ioh, DisableDialogTextSE);
 	WRITE_CONFIG(ioh, DisableDialogSwitchSE);
 	WRITE_CONFIG(ioh, DisableOriginalVoice);
+	WRITE_CONFIG(ioh, ShowInfo);
+	WRITE_CONFIG(ioh, PPSSPP);
 
 	IoFClose(ioh);
 	return true;

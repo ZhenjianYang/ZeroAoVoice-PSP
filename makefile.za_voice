@@ -1,8 +1,12 @@
 TARGET = za_voice
 ATTR = prx
 
-OBJS = za_voice_entry.o za_voice.o hook.o hook2.o config.o \
-		player.o io.o event.o mutex.o pspthreadman_mutex.o
+OBJS = za_voice_entry.o za_voice.o hook.o hook2.o ctrl.o  \
+			draw.o player.o config.o \
+			io.o event.o mutex.o  \
+			sceKernelMutex.o sceDmac.o \
+
+RCS = font.dat
 
 DIR_BIN = bin
 DIR_SRC = src
@@ -52,3 +56,4 @@ $(DIR_SRC)/hook2.c : $(DIR_SRC)/asm_offset_define.h
 
 $(DIR_SRC)/asm_offset_define.h : $(DIR_SRC)/offset_define.c $(DIR_SRC)/offset_define.h $(DIR_SRC)/global.h $(DIR_SRC)/config.h $(DIR_SRC)/hook_data.h
 	$(CC) -S $< -o - | awk -F'[\t:]' '{ if($$1 ~ /OFF/) { printf "#define " $$1 " "} else if($$2 == ".word") {print $$3} }' > $@
+

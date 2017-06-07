@@ -6,6 +6,7 @@
 extern "C" {
 #endif // __cplusplus
 
+#define PATH_CONFIG "ms0:/PSP/za_voice/za_voice.ini"
 
 #define AutoPlay_VoiceOnly			1
 #define AutoPlay_All				2
@@ -26,6 +27,9 @@ typedef struct Config {
 	int DisableDialogTextSE;
 	int DisableDialogSwitchSE;
 	int DisableOriginalVoice;
+	int ShowInfo;
+
+	int PPSSPP;
 } Config;
 
 bool LoadConfig(struct Config* config, const char* cfg_file);

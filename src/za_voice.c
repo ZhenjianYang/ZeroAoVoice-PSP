@@ -11,6 +11,8 @@
 #include "hook.h"
 #include "config.h"
 #include "global.h"
+#include "message.h"
+#include "draw.h"
 #include "log.h"
 
 Global g;
@@ -20,8 +22,6 @@ Global g;
 
 #define UMDID_AO "NPJH-50473"
 #define PATH_BASE_AO "ms0:/PSP/za_voice/ao/"
-
-#define PATH_CONFIG "ms0:/PSP/za_voice/za_voice.ini"
 
 static const struct {
 	const char ext[4];
@@ -127,7 +127,9 @@ int InitZaVoice(unsigned args, void *argp)
 		"    WaitTimeDialogWithVoice  = %d\n"
 		"    SkipVoice                = %d\n"
 		"    DisableDialogTextSE      = %d\n"
-		"    DisableDialogSwitchSE    = %d",
+		"    DisableDialogSwitchSE    = %d\n"
+		"    ShowInfo                 = %d\n"
+		"    PPSSPP                   = %d",
 		g.config.Volume,
 		g.config.AutoPlay,
 		g.config.WaitTimePerChar,
@@ -135,7 +137,9 @@ int InitZaVoice(unsigned args, void *argp)
 		g.config.WaitTimeDialogWithVoice,
 		g.config.SkipVoice,
 		g.config.DisableDialogTextSE,
-		g.config.DisableDialogSwitchSE
+		g.config.DisableDialogSwitchSE,
+		g.config.ShowInfo,
+		g.config.PPSSPP
 	);
 	SaveConfig(&g.config, PATH_CONFIG);
 
@@ -163,12 +167,20 @@ int InitZaVoice(unsigned args, void *argp)
 		(u32)&g, g.mod_base, g.off_pfm_cnt, (u32)g.pfm_cnt
 	);
 
+	InitDraw();
 	LOG("All init Done.");
+
+	Info info = {
+			Msg_Time_Hello,
+			Msg_Hello
+	};
+	AddInfo(&info);
 	return 0;
 }
 
 int EndZaVoice(unsigned args, void *argp) {
 	CleanHook();
 	EndPlayer();
+	EndDraw();
 	return 0;
 }

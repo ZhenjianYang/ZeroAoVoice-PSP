@@ -70,6 +70,7 @@ bool EndDraw() {
 		memID = -1;
 		vbuff = NULL;
 	}
+	RemoveInfo();
 	return true;
 }
 
@@ -97,8 +98,8 @@ int Draw() {
 			sceDmacMemcpy(vbuff, p, VBUFF_SIZE);
 
 			BitType* q = (BitType*)vbuff;
-			for(int j = 0;j < CH_HEIGTH; j++) {
-				for(int i = 0; i < _draw.width; i++) {
+			for(unsigned j = 0;j < CH_HEIGTH; j++) {
+				for(unsigned i = 0; i < _draw.width; i++) {
 					q[i] = _draw.data[j][i];
 				}
 				q += PSP_VRAM_WIDTH;
@@ -153,7 +154,7 @@ bool AddInfo(const Info *info) {
 	return true;
 }
 
-bool RemoveInfo(int type) {
+bool RemoveInfo() {
 	_draw.dead_time = 0;
 	need_draw = 0;
 

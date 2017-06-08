@@ -42,14 +42,21 @@ typedef struct WAVHead
 static IoHandle _file = NULL;
 static Sf_Open_Mode _mode;
 
+#define MIN_FILE_SIZE 0x800
+
 bool _Open(void* source, Sf_Open_Mode mode) {
 	_mode = mode;
 #define FAILED_IF(condition) if(condition) { if(_mode == Sf_Open_Mode_FileName) IoFClose(_file); _file = NULL; return false; }
 	WAVHead head;
 
-	_file = _mode == Sf_Open_Mode_FileName ?
-			IoFOpen((const char*)source, IO_O_RDONLY)
-			: (IoHandle)source;
+	if(_mode == Sf_Open_Mode_FileName) {
+		IoFOpen((const char*)source, IO_O_RDONLY);
+	} else {
+		_file = ((Sf_Ioh_Param*)source)->ioh;
+		if(((Sf_Ioh_Param*)source)->size < MIN_FILE_SIZE) {
+			return false;
+		}
+	}
 
 	if (_file == NULL) {
 		return false;

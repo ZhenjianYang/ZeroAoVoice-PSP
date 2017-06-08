@@ -35,7 +35,7 @@ bool VP_Init(struct VoicePack *voice_pack, const char* pack_file) {
 	LOG("Voice pack:\n"
 		"    count(record) = %d\n"
 		"    count = %d\n"
-		"    ext = %s\n",
+		"    ext = %s",
 		count, voice_pack->count, voice_pack->ext);
 
 	return true;
@@ -78,11 +78,17 @@ const struct VoiceInfo* VP_Find(struct VoicePack *voice_pack, unsigned voice_id)
 }
 
 bool VP_SetOffset(struct VoicePack *voice_pack, unsigned voice_id) {
-	const VoiceInfo* vi = VP_Find(voice_pack, voice_id);
-	if(!vi) return false;
+	LOG("Search Voice id : %d", voice_id);
 
+	const VoiceInfo* vi = VP_Find(voice_pack, voice_id);
+	if(!vi) {
+		LOG("Not found.");
+		return false;
+	}
+
+	LOG("Found. offset = 0x%08X, size = 0x%08X", vi->offset, vi->size);
 	IoFSeek(voice_pack->ioh, vi->offset, IO_SEEK_SET);
+
+	LOG("seek set.");
 	return true;
 }
-
-

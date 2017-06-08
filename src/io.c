@@ -16,7 +16,7 @@ unsigned IoFWrite(const void * buf, unsigned sz, unsigned cnt, IoHandle ioh) {
 }
 
 int IoFSeek(IoHandle ioh, long long off, int whence) {
-	sceIoLseek((SceUID)ParseHandle(ioh), off, whence);
+	if(sceIoLseek((SceUID)ParseHandle(ioh), off, whence) < 0) return -1;
 	return 0;
 }
 

@@ -11,10 +11,16 @@
 
 typedef enum Sf_Open_Mode {
 	Sf_Open_Mode_FileName,
-	Sf_Open_Mode_IoHandle
+	Sf_Open_Mode_IoHandle,
 } Sf_Open_Mode;
 
 typedef u16 SampleType;
+
+typedef struct Sf_Ioh_Param {
+	Handle ioh;
+	unsigned offset;
+	unsigned size;
+} Sf_Ioh_Param;
 
 typedef struct SoundFile {
 	bool (*Open)(void* source, Sf_Open_Mode mode);

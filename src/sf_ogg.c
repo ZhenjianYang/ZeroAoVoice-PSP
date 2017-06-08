@@ -18,6 +18,51 @@ bool InitOgg(SoundFile* soundFile) {
 
 #include "io.h"
 
+typedef struct VPV {
+	Handle ioh;
+	unsigned offset;
+	unsigned size;
+	unsigned pos;
+} VPV;
+static unsigned VPVoice_Read(void * buf, unsigned sz, unsigned cnt, void* vpv) {
+	VPV* pvpv = (VPV*)vpv;
+	if(pvpv->pos >= pvpv->size) return 0;
+
+	unsigned request = (pvpv->size - pvpv->pos) / sz;
+	if(request > cnt) request = cnt;
+
+	unsigned read = IoFRead(buf, sz, request, pvpv->ioh);
+	pvpv->pos += read * sz;
+
+	if(read < cnt) {
+		IoFSeek(pvpv->ioh, pvpv->offset + pvpv->pos, IO_SEEK_SET);
+	}
+	return read;
+}
+static int VPVoice_Seek(void* vpv, long long off, int whence) {
+	VPV* pvpv = (VPV*)vpv;
+	switch(whence) {
+	case IO_SEEK_SET:
+		off += pvpv->offset;
+		break;
+	case IO_SEEK_CUR:
+		off += pvpv->offset + pvpv->pos;
+		break;
+	case IO_SEEK_END:
+		off += pvpv->offset + pvpv->size;
+		break;
+	}
+
+	if(off < (long long)pvpv->offset || off > (long long)pvpv->offset + pvpv->size) return -1;
+	if(IoFSeek(pvpv->ioh, off, IO_SEEK_SET) < 0) return -1;
+	pvpv->pos = (unsigned)(off - pvpv->offset);
+	return 0;
+}
+
+static long VPVoice_SeekTell(void* vpv) {
+	return ((VPV*)vpv)->pos;
+}
+
 #define OV_EXCLUDE_STATIC_CALLBACKS
 #include <vorbis/vorbisfile.h>
 static ov_callbacks ov_callbacks_Io = {
@@ -26,29 +71,38 @@ static ov_callbacks ov_callbacks_Io = {
 	IoFClose,
 	IoFTell
 };
-static ov_callbacks ov_callbacks_Io_NoClose = {
-	IoFRead,
-	IoFSeek,
+static ov_callbacks ov_callbacks_forPack = {
+	VPVoice_Read,
+	VPVoice_Seek,
 	NULL,
-	IoFTell
+	VPVoice_SeekTell
 };
 
 static OggVorbis_File _ovFile;
 static Sf_Open_Mode _mode;
+static VPV _vpv;
 
 bool _Open(void* source, Sf_Open_Mode mode) {
 	_mode = mode;
 #define FAILED_IF(condition) if(condition) { if(_mode == Sf_Open_Mode_FileName) IoFClose(_file); _file = NULL; return false; }
 
-	void* _file = _mode == Sf_Open_Mode_FileName ?
-		IoFOpen((const char*)source, IO_O_RDONLY)
-		: (IoHandle)source;
+	void* _file = NULL;
+	if(_mode == Sf_Open_Mode_FileName) {
+		_file = IoFOpen((const char*)source, IO_O_RDONLY);
+	} else {
+		_file = &_vpv;
+		_vpv.ioh = ((Sf_Ioh_Param*)source)->ioh;
+		_vpv.size = ((Sf_Ioh_Param*)source)->size;
+		_vpv.offset = ((Sf_Ioh_Param*)source)->offset;
+		_vpv.pos = 0;
+	}
+
 	if (_file == NULL) {
 		return false;
 	}
 
 	FAILED_IF(ov_open_callbacks(_file, &_ovFile, 0, 0,
-			_mode == Sf_Open_Mode_FileName ? ov_callbacks_Io : ov_callbacks_Io_NoClose));
+			_mode == Sf_Open_Mode_FileName ? ov_callbacks_Io : ov_callbacks_forPack));
 
 	vorbis_info* info = ov_info(&_ovFile, -1);
 

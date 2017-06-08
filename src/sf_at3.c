@@ -1,4 +1,5 @@
 #include "sf_at3.h"
+#include "log.h"
 
 #define FillZero(ptr, size) { for(unsigned __i = 0; __i < size; __i++) *((u8*)(ptr) + __i) = 0; }
 
@@ -28,6 +29,7 @@ bool InitAt3(SoundFile* soundFile) {
 #define SAMPLES_PER_FRAME_AT3PLUS	2048
 
 #define MAX_FRAME_SIZE   2048
+#define MIN_FILE_SIZE 0x800
 
 static int _buff_src_len;
 static u8 _buff_src[MAX_FRAME_SIZE * 4];
@@ -45,15 +47,25 @@ static Sf_Open_Mode _mode;
 static int _at3Id = -1;
 
 bool _Open(void* source, Sf_Open_Mode mode) {
-#define FAILED_IF(condition) if(condition) { if(_mode == Sf_Open_Mode_FileName) IoFClose(_file); _file = NULL; return false; }
-	_file = _mode == Sf_Open_Mode_FileName ?
-				IoFOpen((const char*)source, IO_O_RDONLY)
-				: (IoHandle)source;
+	_mode = mode;
+#define FAILED_IF(condition) if(condition) { LOG(#condition); if(_mode == Sf_Open_Mode_FileName) IoFClose(_file); _file = NULL; return false; }
+
+	_buff_src_len = sizeof(_buff_src);
+	_file = NULL;
+
+	if(_mode == Sf_Open_Mode_FileName) {
+		IoFOpen((const char*)source, IO_O_RDONLY);
+	} else {
+		_file = ((Sf_Ioh_Param*)source)->ioh;
+		if(_buff_src_len > ((Sf_Ioh_Param*)source)->size) {
+			_buff_src_len = ((Sf_Ioh_Param*)source)->size;
+		}
+	}
 
 	if (!_file) return false;
 
-	_buff_src_len = IoFRead(_buff_src, 1, sizeof(_buff_src), _file);
-	FAILED_IF(_buff_src_len < 44);
+	_buff_src_len = IoFRead(_buff_src, 1, _buff_src_len, _file);
+	FAILED_IF(_buff_src_len < MIN_FILE_SIZE);
 	unsigned offset = 0;
 
 	u32* head = (u32*)(_buff_src + offset);
@@ -164,7 +176,7 @@ int _Read(SampleType(*buff)[NUM_CHANNELS_BUF], int count) {
 }
 
 void _Close() {
-	if(_file) {
+	if (_file && _mode == Sf_Open_Mode_FileName) {
 		IoFClose(_file);
 		_file = NULL;
 	}

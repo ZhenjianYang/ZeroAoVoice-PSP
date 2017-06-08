@@ -10,7 +10,6 @@ extern "C" {
 
 #define FPS 30
 #define TIME_UNITS_PER_SEC 1000
-#define CTRL_OK 0x4000
 
 enum {
 	Game_Unknown = 0,

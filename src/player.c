@@ -97,6 +97,10 @@ static int soundThread(SceSize args, void *argp) {
 }
 
 static int readThread(SceSize args, void *argp) {
+	char fileName[64];
+	unsigned voice_id;
+	InitSfCall initSfCall;
+
 	int read_left = SMPNUM_HALFBUFF, read_right = SMPNUM_HALFBUFF;
 	for (;;) {
 		EventFlags req = EventWait(_evh_read,
@@ -118,15 +122,35 @@ static int readThread(SceSize args, void *argp) {
 			EventWait(_evh_read, StopPlayDone, EVENT_WAITAND | EVENT_WAITCLEAR);
 
 			MutexLock(_mt);
-			bool ok = _initSfCall(&_sf);
+			initSfCall = _initSfCall;
+			voice_id = _voice_id;
+			if(!voice_id) {
+				for(unsigned i = 0; i < sizeof(fileName) && _fileName[i]; i++) {
+					fileName[i] = _fileName[i];
+				}
+			}
+			MutexUnlock(_mt);
+
+			bool ok = initSfCall(&_sf);
+
 			if(ok) {
-				if(_voice_id == 0) {
-					ok = VP_SetOffset(&g.vp, _voice_id) && _sf.Open(g.vp.ioh, Sf_Open_Mode_IoHandle);
+				if(voice_id) {
+					const VoiceInfo *vi;
+					if((vi = VP_Find(&g.vp, voice_id)) != NULL) {
+						LOG("Voice Found. ioh = 0x%08X, offset = 0x%08X, size = 0x%08X", (unsigned)g.vp.ioh, vi->offset, vi->size);
+
+						Sf_Ioh_Param param = { g.vp.ioh, vi->offset, vi->size };
+						IoFSeek(g.vp.ioh, vi->offset, IO_SEEK_SET);
+
+						ok = _sf.Open(&param, Sf_Open_Mode_IoHandle);
+					} else {
+						LOG("Voice Not Found.");
+						ok = false;
+					}
 				} else {
 					ok = _sf.Open(_fileName, Sf_Open_Mode_FileName);
 				}
 			}
-			MutexUnlock(_mt);
 
 			if(!ok) {
 				LOG("Open Failed.");

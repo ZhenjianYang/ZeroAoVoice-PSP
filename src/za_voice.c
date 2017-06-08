@@ -93,7 +93,7 @@ static bool initGame(SceUID mid_boot) {
 	if(VP_Init(&g.vp, path_vpk)) {
 		LOG("Voice pack found:\n"
 			"    count = %d\n"
-			"    ext = %s\n",
+			"    ext = %s",
 			g.vp.count, g.vp.ext);
 
 		for(unsigned i = 0; i < sizeof(_sfs) / sizeof(*_sfs); i++) {

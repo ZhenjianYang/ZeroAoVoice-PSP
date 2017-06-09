@@ -59,7 +59,7 @@ static int VPVoice_Seek(void* vpv, long long off, int whence) {
 	return 0;
 }
 
-static long VPVoice_SeekTell(void* vpv) {
+static long VPVoice_Tell(void* vpv) {
 	return ((VPV*)vpv)->pos;
 }
 
@@ -75,7 +75,7 @@ static ov_callbacks ov_callbacks_forPack = {
 	VPVoice_Read,
 	VPVoice_Seek,
 	NULL,
-	VPVoice_SeekTell
+	VPVoice_Tell
 };
 
 static OggVorbis_File _ovFile;

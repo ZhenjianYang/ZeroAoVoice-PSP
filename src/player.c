@@ -305,7 +305,6 @@ bool PlaySound(struct Play* play) {
 
 bool StopSound() {
 	g.order.disableDududu = g.order.disableDlgSe = 0;
-	g.autoPlay.fm_voice_start = g.autoPlay.fm_voice_auto = 0;
 
 	if(g.config.SkipVoice) {
 		EventSet(_evh_read, StopSoundRequest);

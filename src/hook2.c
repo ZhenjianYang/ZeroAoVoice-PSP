@@ -157,7 +157,7 @@ __asm__(
 	"    li      $t0, 0x64"										BREAK
 	"    lui     $t4, %hi(g)"									BREAK
 	"    addiu   $t4, %lo(g)"									BREAK
-	"    sw      $zero, "  S(OFF_od_isdlg)  "($t4)"			BREAK
+	"    sw      $zero, "  S(OFF_od_isdlg)  "($t4)"				BREAK
 	"    lw      $t5, "  S(OFF_cfg_disdlg)  "($t4)"				BREAK
 	"    beq     $t5, $zero, call_se"							BREAK
 	"    lw      $t5, "  S(OFF_od_disdlg)  "($t4)"				BREAK
@@ -165,6 +165,12 @@ __asm__(
 	"    li      $t0, 0"										BREAK
 
 	"call_se:"													BREAK
+	"    sw      $zero, " S(OFF_ap_tend)  "($t4)"				BREAK
+	"    sw      $zero, " S(OFF_ap_tcnt)  "($t4)"				BREAK
+	"    sw      $zero, " S(OFF_ap_fmvs)  "($t4)"				BREAK
+	"    sw      $zero, " S(OFF_ap_fms)  "($t4)"				BREAK
+	"    sw      $zero, " S(OFF_od_isdlg)  "($t4)"				BREAK
+
 	"    lw      $t5, "  S(OFF_sub_se)  "($t4)"					BREAK
 	"    jalr    $t5"											BREAK
 

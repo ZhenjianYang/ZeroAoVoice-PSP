@@ -58,6 +58,10 @@ Then you will get 4 files under folder "bin" :
     **(ext)** is the extention of the voice files   
     **e.g.**  wav format voice files for *Zero no Kiseki* should be put to **(memorystick)/PSP/za_voice/zero/wav/**.
 
+	***OR*** (**This way is recommended**)   
+	Pack converted voice files with [tools/PackVoiceFiles](https://github.com/ZhenjianYang/ZeroAoVoice-PSP/tree/master/tools/PackVoiceFiles),
+	rename the packed file to **voice.pak** and put it under **(memorystick)/PSP/za_voice/(game)/**
+
 8.  Modify extracted script files(*.bin under folder scena) by adding voice instrucions. (Details will be described later)
 
 9.  Add Modified script files to game image. (Details will be described later)
@@ -78,12 +82,12 @@ Then you will get 4 files under folder "bin" :
 
     Here are ways to enable the extra memory in some systems.
 
-    - **PSVita (Henkaku, Adrenaline 4.1)**   
+    - **PSVita (Henkaku, Adrenaline 4.1+)**   
       Enable extra memory by   
       **_XMB_** -> **_ADRENALINE VSH MENU_** -> **_RECOVERY MENU_** -> **_Advanced_** -> **_Advanced configuration_** ->   
       Set **_Force high memory layout_** to **_Enable_**
 
-    - **PPSSPP**   
+    - **PPSSPP (Latest version)**   
       Enable extra memory by   
       **_Settings_** -> **_System_** ->   
       Set **_PSP model_** to **_PSP-2000/3000_**
@@ -105,16 +109,16 @@ Then you will get 4 files under folder "bin" :
         Software decoding.  
         You can convert wav to ogg with [oggenc2](http://www.rarewares.org/ogg-oggenc.php).
 
-    - **at3**   
+    - **at3** (recommended)    
         Hardware decoding.  
         You can convert wav to at3 with at3tool.   
         at3tool can only convert a wav with sample rate 44100Hz, but the original voice files' sample rate
         is 48000Hz. So you must change the wav files' sample rate by a resample software before converting them
         to at3.
 
-    When the game lanching, za_voice.prx will check voice folders in turn, the first one found will be seleted as
+    When the game lanching, za_voice.prx will check voice folders/pack in turn, the first one found will be seleted as
     the format. The turn is:  
-      `at3 -> ogg -> wav`
+      `pak -> at3 -> ogg -> wav`
 
     **Note for PPSSPP users:**
       ~~~~
@@ -126,8 +130,94 @@ Then you will get 4 files under folder "bin" :
       (oggenc2 supports resampling during conversion) 
       ~~~~
 
+## 4.Settings
 
-## 4.About the script files
+1.  **Configuration file**   
+
+The configuration file for za_voice.prx is **(memorystick)/PSP/za_voice/za_voice.ini**.   
+List settings here:
+
+- **Volume**   
+    Voice's volume, 0~100, default is 100.
+
+- **AutoPlay**   
+    Auto play the dialog.   
+	Default is 2.   
+	- **0** : Off
+	- **1** : Enable if the dialog has voice
+	- **2** : Enable for all dialogs   
+	Waiting time of **AutoPlay** could be set with next 3 settings.
+
+- **WaitTimePerChar**   
+    Default is 60.   
+
+- **WaitTimeDialog**   
+    Default is 800.   
+	Then with default settings, waiting time for a non-voice dialog with 20 characters will be 60*20+800=2000.
+
+- **WaitTimeDialogWithVoice**   
+    Default is 500.   
+	Then with default settings, waiting time for a dialog with woice will be 500 + *length of voice*.
+
+**NOTE:** The time unit of above 3 settings is millisecond. But inside the module, we use *Frame* as time unit.
+And we assume:    
+    `30 Frames = 1 secnod = 1000 milliseconds`
+
+- **SkipVoice**   
+    When the dialog is closed. Whether stop the voice or not.    
+	Default is 1.   
+	- **0** : Off (Do not stop)
+	- **1** : On (Stop)
+
+- **DisableDialogTextSE**   
+    Whether disable texts' se (sounds like du du du) when playing voice.    
+	Default is 1.   
+	- **0** : Off (Do not disable se)
+	- **1** : On (Disable se)
+
+- **DisableDialogSwitchSE**   
+    Whether disable dialog swiching/closing se when playing voice.    
+	Default is 1.   
+	- **0** : Off (Do not disable se)
+	- **1** : On (Disable se)
+
+- **DisableOriginalVoice**   
+    For *Ao no Kiseki*, there are two kinds of voices beside battle voice: reaction voices and scene voices.   
+	This setting could disable the scene voices.   
+	(*Zero no Kiseki* has only reaction voices, so this setting has no effict with *Zero no Kiseki*)   
+	Default is 1.   
+	- **0** : Off (Do not disable original scena voices)
+	- **1** : On (Disable original scena voices)
+
+- **ShowInfo**   
+    Some settings(describe later) could be changed during the game playing. When these settings changed
+	whether show the infomation about it.   
+	Default is 1.
+	- **0** : Off (Do not show)
+	- **1** : On (Show the infomation)
+	
+- **PPSSPP**   
+	Default is 0.   
+    If you are using PPSSPP and want **ShowInfo** work, then set this setting to 1, otherwise keep it 0.   
+	**NOTE:** Never set it to 1 if you run your game in a real PSP or PSVita.
+
+2.  **Change settings during game playing**
+
+**When there's a dialog in the screen**, some settings mentioned above could be changed with hotkeys.   
+List them here:   
+
+- **SQUARE** + **RIGHT**   
+	Swich setting **AutoPlay**  
+
+- **SQUARE** + **UP**/**DOWN**   
+	**Volume** +/- 1   
+
+- **SQUARE** + **TRIANGLE** + **UP**/**DOWN**   
+	**Volume** +/- 5   
+
+**NOTE:** Sometimes hotkeys are not available even if a dialog is showing.
+
+## 5.About the script files
 
 1. **Voice instrucions's format**
 

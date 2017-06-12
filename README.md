@@ -161,7 +161,7 @@ List settings here:
 
 **NOTE:** The time unit of above 3 settings is millisecond. But inside the module, we use *Frame* as time unit.
 And we assume:    
-    `30 Frames = 1 secnod = 1000 milliseconds`
+    `30 Frames = 1 second = 1000 milliseconds`
 
 - **SkipVoice**   
     When the dialog is closed. Whether stop the voice or not.    

@@ -354,6 +354,8 @@ List them here:
 - **方块** + **三角** + **上**/**下**    
 	**Volume** +/- 5 
 
+**注意** 部分情况下，即使屏幕中有对话框，也无法更改配置
+
 ## 本项目使用的外部库
 
 -   [PSPSDK](https://github.com/pspdev/pspsdk), 基于

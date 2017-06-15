@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	uint32_t lba_next = 0;
-	for (auto di = (DInfo*)(dlst + 0x400); di < (DInfo*)(dlst + size_data_lst + sizeof(DInfo) - 1); di++) {
+	for (auto di = (DInfo*)(dlst + 0x400); di < (DInfo*)(dlst + size_data_lst - (sizeof(DInfo) - 1)); di++) {
 		unsigned char type = di->lba >> 24;
 		if (type == 0) continue;
 

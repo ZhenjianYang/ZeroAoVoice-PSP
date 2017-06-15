@@ -92,9 +92,11 @@ Then you will get 4 files under folder "bin" :
       **_Settings_** -> **_System_** ->   
       Set **_PSP model_** to **_PSP-2000/3000_**
 
-    - **Real PSP 2000/3000/go/E1000**   
-      There should be a way to enable the extra memory.   
-      Because I don't have any of them, so I'm not sure if it is really possible. 
+    - **Real PSP 2000/3000/go/E1000 (PRO 6.60+)**   
+      Enable extra memory by   
+      **_XMB_** -> **_PRO VSH MENU_** -> **_RECOVERY MENU_** -> **_Advanced_** -> **_Advanced configuration_** ->   
+      Set **_Force high memory layout_** to **_Enable_**  
+      (I'm not very sure because I have none of them)
          
 2.  **Supported voice formats.**
 

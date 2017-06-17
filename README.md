@@ -1,7 +1,6 @@
 # ZeroAoVoice-PSP
 
-This projcet is still in progress, its goal is making voice patches for 
-the PSP games *Zero no Kiseki* & *Ao no Kiseki*
+Voice patches for PSP games *Zero no Kiseki* & *Ao no Kiseki*
 
 **NOTE:** This projcet is licensed under the GPLv3. You MUST copy,
 distribute and/or modify any code or binaries from this projcet under
@@ -237,6 +236,8 @@ List them here:
 
     About how to decompile/recompile script files, pelease refer to [this projcet](https://github.com/ZhenjianYang/EDDecompiler)   
     And in [this project](https://github.com/ZhenjianYang/SoraVoice), there may be some tools useful for step 2.
+    
+    **And here's a [projcet](https://github.com/ZhenjianYang/ZeroAoVoiceScripts) about voice script files.**
 
 3. **Add modified script files to game image**
 
@@ -265,7 +266,7 @@ List them here:
 
 # ZeroAoVoice-PSP
 
-这是进行中的工程，目标为制作PSP游戏《零·碧之轨迹》系列的语音补丁
+PSP游戏《零之轨迹》及《碧之轨迹》的语音补丁
 
 **注意：** 本项目基于GPLv3开源协议，对本项目的任何代码或二进制文件的复制、修改、分发需遵循此协议。
 具体细节请参见[LICENSE](https://github.com/ZhenjianYang/SoraVoice/blob/master/LICENSE)文件

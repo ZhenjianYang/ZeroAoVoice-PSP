@@ -28,11 +28,13 @@ int main(int argc, char *argv[]) {
 		size_t size;
 
 		size_t lba;
-		DInfo* di_bin;
-		DInfo* di_mc1;
+		DInfo* di;
 	};
 	using Scns = map<string, FileData>;
 	Scns scns;
+
+	using Mc1s = list<DInfo*>;
+	Mc1s mc1s;
 	for (auto &p : fs::directory_iterator(dir_scns)) {
 		if (fs::is_regular_file(p.status())) {
 			ifstream ifs(p.path().string(), ios::in | ios::binary);
@@ -67,6 +69,10 @@ int main(int argc, char *argv[]) {
 
 	constexpr char data_lst[] = "data.lst";
 	fstream fstr(path_iso, ios::in | ios::out | ios::binary);
+	if (!fstr) {
+		cout << "Open iso failed." << endl;
+		return 0;
+	}
 	unique_ptr<char[]> shead = make_unique<char[]>(MaxIsoHeadSize);
 	fstr.read(shead.get(), MaxIsoHeadSize);
 	const char* head = shead.get();
@@ -113,52 +119,59 @@ int main(int argc, char *argv[]) {
 		uint32_t size = di->size;
 
 		auto it = scns.end();
-		if (type == idx_bin || type == idx_mc1) {
+		if (type == idx_bin) {
 			string file_bin = string(di->name, sizeof(di->name)).c_str();
 			file_bin += ".bin";
 			it = scns.find(file_bin);
-		};
-		if (it == scns.end()) {
-			lba_next = max(lba_next, lba + (size + LbaAlign) / LbaAlign);
-		} else if (type == idx_bin) {
-			it->second.di_bin = di;
+
+			if (it != scns.end())
+				it->second.di = di;
 		}
 		else {
-			it->second.di_mc1 = di;
+			if (type == idx_mc1) {
+				mc1s.push_back(di);
+			}
+			lba_next = max(lba_next, lba + (size + LbaAlign) / LbaAlign);
 		}
+	}
+
+	for(auto& mc1 : mc1s) {
+		fstr.seekg(mc1->lba * LbaAlign, ios::beg);
+		unique_ptr<char[]> sdata_mc1 = make_unique<char[]>(mc1->size);
+		fstr.read(sdata_mc1.get(), mc1->size);
+		char* data_mc1 = sdata_mc1.get();
+		uint32_t cnts = *(uint32_t*)data_mc1;
+
+		struct Mc1Data {
+			char name[16];
+			uint32_t data[4];
+		};
+
+		for (uint32_t i = 0; i < cnts; i++) {
+			Mc1Data* md = (Mc1Data*)(data_mc1 + 0x10 + sizeof(Mc1Data) * i);
+			if (md->name[0] == '_') continue;
+
+			auto it = scns.find(md->name);
+			if (it != scns.end() && it->second.di) {
+				md->name[0] = '_';
+			}
+		}
+
+		fstr.seekp(mc1->lba * LbaAlign, ios::beg);
+		fstr.write(sdata_mc1.get(), mc1->size);
+
+		fstr.flush();
 	}
 
 	int cnt_added = 0, cnt_not = 0;
 	for (auto& scn : scns) {
-		if (scn.second.di_bin) {
+		if (scn.second.di) {
 			scn.second.lba = lba_next;
 
 			lba_next += (scn.second.size + LbaAlign) / LbaAlign;
 
-			scn.second.di_bin->size = scn.second.size;
-			scn.second.di_bin->lba = scn.second.lba | (idx_bin << 24);
-			if (scn.second.di_mc1) {
-				fstr.seekg(scn.second.di_mc1->lba * LbaAlign, ios::beg);
-				unique_ptr<char[]> sdata_mc1 = make_unique<char[]>(scn.second.di_mc1->size);
-				fstr.read(sdata_mc1.get(), scn.second.di_mc1->size);
-				char* data_mc1 = sdata_mc1.get();
-				uint32_t cnts = *(uint32_t*)data_mc1;
-
-				struct Mc1Data {
-					char name[16];
-					uint32_t data[4];
-				};
-
-				for (uint32_t i = 0; i < cnts; i++) {
-					Mc1Data* md = (Mc1Data*)(data_mc1 + 0x10 + sizeof(Mc1Data) * i);
-					if (md->name == scn.first) {
-						md->name[0] = '_';
-					}
-				}
-
-				fstr.seekp(scn.second.di_mc1->lba * LbaAlign, ios::beg);
-				fstr.write(sdata_mc1.get(), scn.second.di_mc1->size);
-			}
+			scn.second.di->size = scn.second.size;
+			scn.second.di->lba = scn.second.lba | (idx_bin << 24);
 
 			fstr.seekp(scn.second.lba * LbaAlign, ios::beg);
 			fstr.write(scn.second.data.get(), scn.second.size);
@@ -195,4 +208,5 @@ int main(int argc, char *argv[]) {
 	fstr.close();
 
 	cout << "Done. Added :" << cnt_added << ", not Added :" << cnt_not << endl;
+	return 0;
 }

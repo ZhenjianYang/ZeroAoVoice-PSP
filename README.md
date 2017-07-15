@@ -72,7 +72,7 @@ More details about voice script files, see [5.About the script files](https://gi
     rename the packed file to **voice.pak** and copy it to **(memorystick)/PSP/za_voice/(game)/**
 
 9.  Copy **za_voice.prx** and **za_voice.ini** to **(memorystick)/PSP/za_voice/**   
-    **NOTE**: If you are a PPSSPP user, open za_voice.ini and modify the last line 'PPSSPP = 0' to 'PPSSPP = 1'
+    **NOTE**: If you are a PPSSPP user, open za_voice.ini and modify the last line 'PPSSPP = 0' to 'PPSSPP = 1'   
     **za_voice.ini** is the configuration file, for more details, see [Settings](https://github.com/ZhenjianYang/ZeroAoVoice-PSP#4settings).
 
 10.  Enable extra memory of your system.    
@@ -93,43 +93,43 @@ More details about voice script files, see [5.About the script files](https://gi
       Set **_Force high memory layout_** to **_Enable_**  
       (I'm not very sure because I have none of them.)
 
-    **NOTE**: PSP1000 is not possible. So voice patches will not work with PSP1000.
+**NOTE**: PSP1000 is not possible. So voice patches will not work with PSP1000.
 
 11.  Now you can lanch your game. If everything is OK, you can enjoy the voice like the 'Evo' edition.
 
 ## 3.Supported voice formats
 
-    The original voice files in the "Evo" edition are at9 files. You can convert them to wav files with at9tool.  
-    And then convert them to supported formats list below:
+The original voice files in the "Evo" edition are at9 files. You can convert them to wav files with at9tool.  
+And then convert them to supported formats list below:
 
-    - **wav**   
-        None compressive format. Lowest CPU pressure.  
-        But it costs more I/O time because the data is such big.
+- **wav**   
+    None compressive format. Lowest CPU pressure.  
+    But it costs more I/O time because the data is such big.
 
-    - **ogg**   
-        Software decoding.  
-        You can convert wav to ogg with [oggenc2](http://www.rarewares.org/ogg-oggenc.php).
+- **ogg**   
+    Software decoding.  
+    You can convert wav to ogg with [oggenc2](http://www.rarewares.org/ogg-oggenc.php).
 
-    - **at3** (recommended)    
-        Hardware decoding.  
-        You can convert wav to at3 with at3tool.   
-        at3tool can only convert a wav with sample rate 44100Hz, but the original voice files' sample rate
-        is 48000Hz. So you must change the wav files' sample rate by a resample software before converting them
-        to at3.
+- **at3** (recommended)    
+    Hardware decoding.  
+    You can convert wav to at3 with at3tool.   
+    at3tool can only convert a wav with sample rate 44100Hz, but the original voice files' sample rate
+    is 48000Hz. So you must change the wav files' sample rate by a resample software before converting them
+    to at3.
 
-    When the game lanching, za_voice.prx will check voice folders/pack in turn, the first one found will be seleted as
-    the format. The turn is:  
-      `pak -> at3 -> ogg -> wav`
+When the game lanching, za_voice.prx will check voice folders/pack in turn, the first one found will be seleted as
+the format. The turn is:  
+    `pak -> at3 -> ogg -> wav`
 
-    **Notes for PPSSPP users:**
-      ~~~~
-      It seems there's a bug with PPSSPP.   
-      za_voice.prx uses PSP system's APIs sceAudioSRCCh* to play sound files.  
-      These APIs supports multiple sample rates : 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11050, 8000  
-      But in PPSSPP, no matter which sample rate is set, it will play the sound file as 44100Hz.  
-      So you must resample all voice files to 44100Hz if you are using PPSSPP.  
-      (oggenc2 supports resampling during conversion) 
-      ~~~~
+**Notes for PPSSPP users:**
+  ~~~~
+  It seems there's a bug with PPSSPP.   
+  za_voice.prx uses PSP system's APIs sceAudioSRCCh* to play sound files.  
+  These APIs supports multiple sample rates : 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11050, 8000  
+  But in PPSSPP, no matter which sample rate is set, it will play the sound file as 44100Hz.  
+  So you must resample all voice files to 44100Hz if you are using PPSSPP.  
+  (oggenc2 supports resampling during conversion) 
+  ~~~~
 
 ## 4.Settings
 
@@ -220,7 +220,8 @@ List them here:
 
 ## 5.About the script files
 
-The script files need to be modified, so **za_voice.prx** will know when and which voice should be played.   
+The script files need to be modified by adding voice instuctions, then **za_voice.prx** will know when and which voice should be played.   
+(Call these modified script files **voice script files**)   
 Here's a [projcet](https://github.com/ZhenjianYang/ZeroAoVoiceScripts) about voice script files.   
 You can get some platforms/versions' voice script files there.
 
@@ -241,7 +242,7 @@ You can get some platforms/versions' voice script files there.
     About how to decompile/recompile script files, pelease refer to [this projcet](https://github.com/ZhenjianYang/EDDecompiler)   
     And in [this project](https://github.com/ZhenjianYang/SoraVoice), there may be some tools useful for step 2.
 
-3. **Add modified script files to game image**
+3. **Add voice script files to game image**
 
     The game doesn't access its resources by path, but use the resources' offset and size which are defined in /PSP_GAME/USRDIR/data.lst .
     So you must fix data.lst after you adding script files to the game image.  

@@ -15,12 +15,15 @@ etc.) or anything modified from them.
 
 ## 1.Build
 
-You should install psptoolchain and pspsdk fisrt.
+You can get the built files in [Release](https://github.com/ZhenjianYang/ZeroAoVoice-PSP/releases).
 
-You can build them by following the project [psptoolchain](https://github.com/pspdev/psptoolchain) (with gcc 4.9.3), or
-download and install a prebuild pspsdk [Minimalist PSPSDK](https://sourceforge.net/projects/minpspw/) (with gcc 4.3.5).
+If you want to build them by yourself, follow these steps:
 
-After all is ready. You can build this projcet with entering the root path of it and typing command `make`.
+1. Install psptoolchain and pspsdk by following the project [psptoolchain](https://github.com/pspdev/psptoolchain)
+(with gcc 4.9.3), or download and install a prebuild pspsdk [Minimalist PSPSDK](https://sourceforge.net/projects/minpspw/)
+(with gcc 4.3.5).
+
+2. Enter the root path of this projcet and type command `make`.
 
 Then you will get 4 files under folder "bin" :
 
@@ -33,53 +36,46 @@ Then you will get 4 files under folder "bin" :
 
 ## 2.How to let it work
 
-1.  Donwload [WQSG_UMD](http://www.brewology.com/downloads/download.php?id=11249&mcid=1), and open you PSP game image (.iso) with it.
-    Then extract **/PSP_GAME/SYSDIR/EBOOT.BIN**, **PSP_GAME/PARAM.SFO**, and the whole folder **/PSP_GAME/USRDIR/data/scena/**
+1.  Open your game image (.iso) with [WQSG_UMD](http://www.brewology.com/downloads/download.php?id=11249&mcid=1).
+    And extract **/PSP_GAME/SYSDIR/EBOOT.BIN** and **PSP_GAME/PARAM.SFO**. Keep WQSG_UMD open.
 
-2.  Open extracted **PARAM.SFO** with [SFOEditor](https://sites.google.com/site/theleecherman/sfoeditor) and add a param **MEMSIZE**
-    with value **1**
+2.  Open extracted PARAM.SFO with [SFOEditor](https://sites.google.com/site/theleecherman/sfoeditor) and add a param
+    **MEMSIZE** with value **1**.
 
-3.  Decrypt **EBOOT.BIN** with **PRXdecrypter 2.7a** (Runs on a PSP or PSVita) or **PPSSPP** (Check on **_Setting_** -> **_Tools_** ->
+3.  Rename extracted EBOOT.BIN to BOOT.BIN.   
+**NOTE**: If you run your game in a real PSP or PSVita, EBOOT.BIN need to be decrypted.   
+    You can decrypt it with **PRXdecrypter 2.7a** (Runs on a PSP or PSVita) or **PPSSPP** (Check on **_Setting_** -> **_Tools_** ->
     **_Developer tools_** -> **_Dump decrypted EBOOT.BIN on game boot_**, and run the game. Then you will get decrypted EBOOT.BIN under
-    **(memorystick)/PSP/SYSTEM/DUMP** with a name like **(game-id).bin)**.   
-    (**This step is NOT required if you run the game with PPSSPP**)
+    **(memorystick)/PSP/SYSTEM/DUMP** with a name like **(game-id).bin**.) 
 
-4.  Rename decrypted **EBOOT.BIN** to **BOOT.BIN**
+4.  Drag modified PARAM.SFO, renamed BOOT.BIN, and EBOOT.BIN from this projcet, back to your game image. Now it's OK
+    to close WQSG_UMD.
 
-5.  Drag **PARAM.SFO**, **BOOT.BIN**, and **EBOOT.BIN** built above back to the game image. Now you can close WQSG_UMD.
+5.  Add voice script files(.bin) to ISO via [tools/AddScnsToIso](https://github.com/ZhenjianYang/ZeroAoVoice-PSP/tree/master/tools/AddScnsToIso).   
+More details about voice script files, see [5.About the script files](https://github.com/ZhenjianYang/ZeroAoVoice-PSP#5about-the-script-files).
 
-6.  Extract voice files(*.at9) from the PSVita edition game ("Evo" edition), and convert them to supported formats(describe later).   
-    You should keep the voice files' names not changed (except the extention).  
-    **e.g.**  **v1234567.at9** should be converted to **v1234567.wav**, **v1234567.ogg**, etc.
+6.  Extract voice files(.at9) from the Vita edition game and convert them to wav with at9tool.
 
-7.  Put converted voice files to **(memorystick)/PSP/za_voice/(game)/(ext)/**  
+7.  Convert wav files to at3(via at3tool, need to resample to 44100Hz first.) or ogg.   
+    At3 is recommended.   
+    **NOTE**: PPSSPP only supports 44100Hz.(Even with ogg files)   
+    **NOTE**: You should keep the voice files' names not changed (except the extention).   
+    **e.g.**  **v1234567.at9** should be converted to **v1234567.at3** or **v1234567.ogg**.
+
+8.  Copy voice files to **(memorystick)/PSP/za_voice/(game)/(ext)/**  
     **(game)** should be **zero** (for *Zero no Kiseki*) or **ao** (for *Ao no Kiseki*)   
     **(ext)** is the extention of the voice files   
-    **e.g.**  wav format voice files for *Zero no Kiseki* should be put to **(memorystick)/PSP/za_voice/zero/wav/**.
+    **e.g.**  at3 format voice files for *Zero no Kiseki* should be put under **(memorystick)/PSP/za_voice/zero/at3/**.
 
-	***OR*** (**This way is recommended**)   
-	Pack converted voice files with [tools/PackVoiceFiles](https://github.com/ZhenjianYang/ZeroAoVoice-PSP/tree/master/tools/PackVoiceFiles),
-	rename the packed file to **voice.pak** and put it under **(memorystick)/PSP/za_voice/(game)/**
+    ***OR*** (**This way is recommended**)   
+    Pack converted voice files with [tools/PackVoiceFiles](https://github.com/ZhenjianYang/ZeroAoVoice-PSP/tree/master/tools/PackVoiceFiles),
+    rename the packed file to **voice.pak** and copy it to **(memorystick)/PSP/za_voice/(game)/**
 
-8.  Modify extracted script files(*.bin under folder scena) by adding voice instrucions. (Details will be described later)
+9.  Copy **za_voice.prx** and **za_voice.ini** to **(memorystick)/PSP/za_voice/**   
+    **NOTE**: If you are a PPSSPP user, open za_voice.ini and modify the last line 'PPSSPP = 0' to 'PPSSPP = 1'
+    **za_voice.ini** is the configuration file, for more details, see [Settings](https://github.com/ZhenjianYang/ZeroAoVoice-PSP#4settings).
 
-9.  Add Modified script files to game image. (Details will be described later)
-
-10.  Put **za_voice.prx** to **(memorystick)/PSP/za_voice/**
-
-11. Now you can launch your game. If everything is OK, you can enjoy the voice like the "Evo" edition.
-
-## 3.Limitations
-
-1.  **Memory**
-
-    For technical reasons, the main module za_voice.prx runs on user mode. This means it shares the user mode memory with the game.
-    As default, the PSP system provides 24MB memory for user mode, and the game will use most of it. Little is left for our module.
-    The original PSP model (1000) has no more memory, so there's no way to run our module now. But later models (2000,3000,go) has
-    extra 32MB physical memory (for UMD cache), and is possible to enable them for user mode.
-    za_voice.prx is able to run on a system if the extra memory is enabled. 
-
-    Here are ways to enable the extra memory in some systems.
+10.  Enable extra memory of your system.    
 
     - **PSVita (Henkaku, Adrenaline 4.1+)**   
       Enable extra memory by   
@@ -95,9 +91,13 @@ Then you will get 4 files under folder "bin" :
       Enable extra memory by   
       **_XMB_** -> **_PRO VSH MENU_** -> **_RECOVERY MENU_** -> **_Advanced_** -> **_Advanced configuration_** ->   
       Set **_Force high memory layout_** to **_Enable_**  
-      (I'm not very sure because I have none of them)
-         
-2.  **Supported voice formats.**
+      (I'm not very sure because I have none of them.)
+
+    **NOTE**: PSP1000 is not possible. So voice patches will not work with PSP1000.
+
+11.  Now you can lanch your game. If everything is OK, you can enjoy the voice like the 'Evo' edition.
+
+## 3.Supported voice formats
 
     The original voice files in the "Evo" edition are at9 files. You can convert them to wav files with at9tool.  
     And then convert them to supported formats list below:
@@ -121,7 +121,7 @@ Then you will get 4 files under folder "bin" :
     the format. The turn is:  
       `pak -> at3 -> ogg -> wav`
 
-    **Note for PPSSPP users:**
+    **Notes for PPSSPP users:**
       ~~~~
       It seems there's a bug with PPSSPP.   
       za_voice.prx uses PSP system's APIs sceAudioSRCCh* to play sound files.  
@@ -143,22 +143,22 @@ List settings here:
 
 - **AutoPlay**   
     Auto play the dialog.   
-	Default is 2.   
-	- **0** : Off
-	- **1** : Enable if the dialog has voice
-	- **2** : Enable for all dialogs   
-	Waiting time of **AutoPlay** could be set with next 3 settings.
+    Default is 2.   
+    - **0** : Off
+    - **1** : Enable if the dialog has voice
+    - **2** : Enable for all dialogs   
+    Waiting time of **AutoPlay** could be set with next 3 settings.
 
 - **WaitTimePerChar**   
     Default is 60.   
 
 - **WaitTimeDialog**   
     Default is 800.   
-	Then with default settings, waiting time for a non-voice dialog with 20 characters will be 60*20+800=2000.
+    Then with default settings, waiting time for a non-voice dialog with 20 characters will be 60*20+800=2000.
 
 - **WaitTimeDialogWithVoice**   
     Default is 500.   
-	Then with default settings, waiting time for a dialog with woice will be 500 + *length of voice*.
+    Then with default settings, waiting time for a dialog with woice will be 500 + *length of voice*.
 
 **NOTE:** The time unit of above 3 settings is millisecond. But inside the module, we use *Frame* as time unit.
 And we assume:    
@@ -166,41 +166,41 @@ And we assume:
 
 - **SkipVoice**   
     When the dialog is closed. Whether stop the voice or not.    
-	Default is 1.   
-	- **0** : Off (Do not stop)
-	- **1** : On (Stop)
+    Default is 1.   
+    - **0** : Off (Do not stop)
+    - **1** : On (Stop)
 
 - **DisableDialogTextSE**   
     Whether disable texts' se (sounds like du du du) when playing voice.    
-	Default is 1.   
-	- **0** : Off (Do not disable se)
-	- **1** : On (Disable se)
+    Default is 1.   
+    - **0** : Off (Do not disable se)
+    - **1** : On (Disable se)
 
 - **DisableDialogSwitchSE**   
     Whether disable dialog swiching/closing se when playing voice.    
-	Default is 1.   
-	- **0** : Off (Do not disable se)
-	- **1** : On (Disable se)
+    Default is 1.   
+    - **0** : Off (Do not disable se)
+    - **1** : On (Disable se)
 
 - **DisableOriginalVoice**   
     For *Ao no Kiseki*, there are two kinds of voices beside battle voice: reaction voices and scene voices.   
-	This setting could disable the scene voices.   
-	(*Zero no Kiseki* has only reaction voices, so this setting has no effict with *Zero no Kiseki*)   
-	Default is 1.   
-	- **0** : Off (Do not disable original scena voices)
-	- **1** : On (Disable original scena voices)
+    This setting could disable the scene voices.   
+    (*Zero no Kiseki* has only reaction voices, so this setting has no effict with *Zero no Kiseki*)   
+    Default is 1.   
+    - **0** : Off (Do not disable original scena voices)
+    - **1** : On (Disable original scena voices)
 
 - **ShowInfo**   
     Some settings(describe later) could be changed during the game playing. When these settings changed
-	whether show the infomation about it.   
-	Default is 1.
-	- **0** : Off (Do not show)
-	- **1** : On (Show the infomation)
-	
+    whether show the infomation about it.   
+    Default is 1.
+    - **0** : Off (Do not show)
+    - **1** : On (Show the infomation)
+    
 - **PPSSPP**   
-	Default is 0.   
+    Default is 0.   
     If you are using PPSSPP and want **ShowInfo** work, then set this setting to 1, otherwise keep it 0.   
-	**NOTE:** Never set it to 1 if you run your game in a real PSP or PSVita.
+    **NOTE:** Never set it to 1 if you run your game in a real PSP or PSVita.
 
 2.  **Change settings during game playing**
 
@@ -208,17 +208,21 @@ And we assume:
 List them here:   
 
 - **SQUARE** + **RIGHT**   
-	Swich setting **AutoPlay**  
+    Swich setting **AutoPlay**  
 
 - **SQUARE** + **UP**/**DOWN**   
-	**Volume** +/- 1   
+    **Volume** +/- 1   
 
 - **SQUARE** + **TRIANGLE** + **UP**/**DOWN**   
-	**Volume** +/- 5   
+    **Volume** +/- 5   
 
 **NOTE:** Sometimes hotkeys are not available even if a dialog is showing.
 
 ## 5.About the script files
+
+The script files need to be modified, so **za_voice.prx** will know when and which voice should be played.   
+Here's a [projcet](https://github.com/ZhenjianYang/ZeroAoVoiceScripts) about voice script files.   
+You can get some platforms/versions' voice script files there.
 
 1. **Voice instrucions's format**
 
@@ -236,8 +240,6 @@ List them here:
 
     About how to decompile/recompile script files, pelease refer to [this projcet](https://github.com/ZhenjianYang/EDDecompiler)   
     And in [this project](https://github.com/ZhenjianYang/SoraVoice), there may be some tools useful for step 2.
-    
-    **And here's a [projcet](https://github.com/ZhenjianYang/ZeroAoVoiceScripts) about voice script files.**
 
 3. **Add modified script files to game image**
 
@@ -285,63 +287,63 @@ PSP游戏《零之轨迹》及《碧之轨迹》的语音补丁
 
 - **AutoPlay**   
     对话框自动播放   
-	默认值2   
-	- **0** : 关闭
-	- **1** : 有语音时开启
-	- **2** : 总是开启    
-	自动播放的等待时间由接下来3个选项控制。
+    默认值2   
+    - **0** : 关闭
+    - **1** : 有语音时开启
+    - **2** : 总是开启    
+    自动播放的等待时间由接下来3个选项控制。
 
 - **WaitTimePerChar**   
     默认值60   
 
 - **WaitTimeDialog**   
     默认值800.   
-	则在默认配置下, 1个20字的无语音对话框的等待时间为60*20+800=2000.
+    则在默认配置下, 1个20字的无语音对话框的等待时间为60*20+800=2000.
 
 - **WaitTimeDialogWithVoice**   
     默认值500.   
-	则在默认配置下, 1个有语音对话框的等待时间为 500 + *语音长度*.
+    则在默认配置下, 1个有语音对话框的等待时间为 500 + *语音长度*.
 
 **注意:** 以上3个配置使用的时间单位为毫秒，但是在内部使用的时间单位为*帧*，  
-	我们假设： `30 帧 = 1 秒 = 1000 毫秒`
+    我们假设： `30 帧 = 1 秒 = 1000 毫秒`
 
 - **SkipVoice**   
     对话框关闭时，是否终止语音    
-	默认值1.   
-	- **0** : 不终止语音
-	- **1** : 终止语音
+    默认值1.   
+    - **0** : 不终止语音
+    - **1** : 终止语音
 
 - **DisableDialogTextSE**   
     有语音时，是否禁用对话框文字显示音效(嘟嘟声)。     
-	默认值1.   
-	- **0** : 不禁用
-	- **1** : 禁用
+    默认值1.   
+    - **0** : 不禁用
+    - **1** : 禁用
 
 - **DisableDialogSwitchSE**   
     有语音时，是否禁用对话框关闭/切换音效。     
-	默认值1.   
-	- **0** : 不禁用
-	- **1** : 禁用
+    默认值1.   
+    - **0** : 不禁用
+    - **1** : 禁用
 
 - **DisableOriginalVoice**   
    对于《碧之轨迹》，除战斗语音外，还有部分语气语音和剧情语音。  
-	本项目可设置是否禁用原有的剧情语音。   
-	(《零之轨迹》无剧情语音，故本配置项对《零之轨迹》无效)   
-	默认值1.   
-	- **0** : 不禁用原有剧情语音
-	- **1** : 禁用原有剧情语音
+    本项目可设置是否禁用原有的剧情语音。   
+    (《零之轨迹》无剧情语音，故本配置项对《零之轨迹》无效)   
+    默认值1.   
+    - **0** : 不禁用原有剧情语音
+    - **1** : 禁用原有剧情语音
 
 - **ShowInfo**   
     部分设置(稍后说明)可以在游戏进行过程中修改，当这些配置被修改时，  
-	是否显示信息。   
-	默认值1.
-	- **0** : 不显示
-	- **1** : 显示
-	
+    是否显示信息。   
+    默认值1.
+    - **0** : 不显示
+    - **1** : 显示
+    
 - **PPSSPP**   
-	默认值0.   
+    默认值0.   
     如果您在使用PPSSPP并且希望上述的**ShowInfo**能正常工作的话，将本选项设置为1, 否则让它保持为0。   
-	**注意:** 当使用实机或PSVita运行时，绝对不要将本选项设为1.
+    **注意:** 当使用实机或PSVita运行时，绝对不要将本选项设为1.
 
 2.  **在游戏进行中修改配置**
 
@@ -349,13 +351,13 @@ PSP游戏《零之轨迹》及《碧之轨迹》的语音补丁
 罗列如下:   
 
 - **方块** + **右**   
-	切换配置项 **AutoPlay**  
+    切换配置项 **AutoPlay**  
 
 - **方块** + **上**/**下**   
-	**Volume** +/- 1   
+    **Volume** +/- 1   
 
 - **方块** + **三角** + **上**/**下**    
-	**Volume** +/- 5 
+    **Volume** +/- 5 
 
 **注意** 部分情况下，即使屏幕中有对话框，也无法更改配置
 

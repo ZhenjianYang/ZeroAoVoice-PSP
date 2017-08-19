@@ -137,7 +137,7 @@ int _Read(SampleType(*buff)[NUM_CHANNELS_BUF], int count) {
 		int request = count - read;
 		if(request > block) request = block;
 		int tread = ov_read(&_ovFile, (char*)wBuff + _sf->blockAlign * read,
-				_sf->blockAlign, 0, 2, 1, &bitstream) / _sf->blockAlign;
+				_sf->blockAlign * request, 0, 2, 1, &bitstream) / _sf->blockAlign;
 		if (tread <= 0) break;
 
 		read += tread;

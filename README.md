@@ -77,21 +77,18 @@ More details about voice script files, see [5.About the script files](https://gi
 
 10.  Enable extra memory of your system.    
 
-    - **PSVita (Henkaku, Adrenaline 4.1+)**   
-      Enable extra memory by   
-      **_XMB_** -> **_ADRENALINE VSH MENU_** -> **_RECOVERY MENU_** -> **_Advanced_** -> **_Advanced configuration_** ->   
-      Set **_Force high memory layout_** to **_Enable_**
+- **PSVita (Henkaku, Adrenaline 4.1+)**    
+  **_XMB_** -> **_ADRENALINE VSH MENU_** -> **_RECOVERY MENU_** -> **_Advanced_** -> **_Advanced configuration_** ->   
+  Set **_Force high memory layout_** to **_Enabled_**
 
-    - **PPSSPP (Latest version)**   
-      Enable extra memory by   
-      **_Settings_** -> **_System_** ->   
-      Set **_PSP model_** to **_PSP-2000/3000_**
+-  **PPSSPP (Latest version)**    
+   **_Settings_** -> **_System_** ->   
+   Set **_PSP model_** to **_PSP-2000/3000_**
 
-    - **Real PSP 2000/3000/go/E1000 (PRO 6.60+)**   
-      Enable extra memory by   
-      **_XMB_** -> **_PRO VSH MENU_** -> **_RECOVERY MENU_** -> **_Advanced_** -> **_Advanced configuration_** ->   
-      Set **_Force high memory layout_** to **_Enable_**  
-      (I'm not very sure because I have none of them.)
+- **Real PSP 2000/3000/go/E1000 (PRO 6.60+)**     
+  **_XMB_** -> **_PRO VSH MENU_** -> **_RECOVERY MENU_** -> **_Advanced_** -> **_Advanced configuration_** ->   
+  Set **_Force high memory layout_** to **_Enabled_**  
+  Set **_Inferno & NP9660 Use ISO Cache_** to **_Disabled_**  
 
 **NOTE**: PSP1000 is not possible. So voice patches will not work with PSP1000.
 
@@ -117,8 +114,8 @@ And then convert them to supported formats list below:
     is 48000Hz. So you must change the wav files' sample rate by a resample software before converting them
     to at3.
 
-When the game lanching, za_voice.prx will check voice folders/pack in turn, the first one found will be seleted as
-the format. The turn is:  
+After the game lanching, za_voice.prx will check voice folders/pack in a particular order, the first one found will be seleted as
+the format. The order is:  
     `pak -> at3 -> ogg -> wav`
 
 **Notes for PPSSPP users:**
